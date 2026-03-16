@@ -4,8 +4,8 @@ from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(
     __name__,
-    template_folder='templates',
-    static_folder='statics')
+    template_folder='app/templates',
+    static_folder='app/statics')
 
 app.config.from_object(Config)
 
