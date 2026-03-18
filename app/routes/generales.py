@@ -1,6 +1,6 @@
 from ..app import app
 from flask import render_template
-from ..models.models import InstitutionDefinitive
+from ..models.models import User, DefTableInstitution, DefAuteur, DefPublication, DefLiaisonSujets, WikidataArchaeologicalSites, WikidataPersons, WikidataPlaces, WikidataConcepts, WikidataOrganizations, WikidataArtMovements, WikidataTimePeriods
 
 @app.route('/')
 def test():
@@ -9,7 +9,7 @@ def test():
      Il s'agit d'un simple SELECT * (query.all()) affiché au sein d'un htlm brut.
     '''
     donnees = []
-    for institution in InstitutionDefinitive.query.all():
+    for institution in DefTableInstitution.query.all():
         donnees.append({
             "id": institution.id,
             "nom": institution.nom
