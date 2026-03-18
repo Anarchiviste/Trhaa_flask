@@ -1,4 +1,4 @@
-from ..app import app
+from ..app import app, db
 from flask import render_template
 from ..models.models import User, DefTableInstitution, DefAuteur, DefPublication, DefLiaisonSujets, WikidataArchaeologicalSites, WikidataPersons, WikidataPlaces, WikidataConcepts, WikidataOrganizations, WikidataArtMovements, WikidataTimePeriods
 
@@ -21,3 +21,14 @@ def test():
             </body>
         </html>
         '''
+
+@app.route('/p_tableau_resultats')
+def p_tableau_resultats():
+    resultats = db.session.query(
+        DefAuteur.auteur_nom,
+        DefAuteur.auteur_prenom,
+        DefPublication.titre,
+        DefPublication.date_publication
+    ).join(DefPublication, DefAuteur.id == DefPublication.id_auteur).all()
+
+    return render_template("pages/tableau_resultats.html", resultats=resultats)
