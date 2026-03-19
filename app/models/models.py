@@ -13,7 +13,14 @@ class User(db.Model):
     password = db.Column(db.String(100), nullable=False)
     def __repr__(self):
         return f'<User {self.name}>'
-
+    
+'''    @staticmethod
+    def compte_utilisateur(nom, email, password):
+        erreurs=[]
+        if not nom:
+            erreurs.append('Un pseudonyme est nécessaire')
+        if not password or len(password) < 6:
+            erreurs.append('Le mot de passe est trop court')'''
 
 # ----------------------------------------------------------------
 # def_table_institution

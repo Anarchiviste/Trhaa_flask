@@ -3,37 +3,6 @@ from flask import render_template
 from ..models.models import User, DefTableInstitution, DefAuteur, DefPublication, DefLiaisonSujets, WikidataArchaeologicalSites, WikidataPersons, WikidataPlaces, WikidataConcepts, WikidataOrganizations, WikidataArtMovements, WikidataTimePeriods
 from sqlalchemy import text, inspect
 
-@app.route('/')
-def test():
-    '''
-    Test est une fonction de test de connection entre l'application, l'ORM et la base de donnée postgres.
-     Il s'agit d'un simple SELECT * (query.all()) affiché au sein d'un htlm brut.
-    '''
-    donnees = []
-
-    try:
-        for i in User.query.all():
-            donnees.append({
-                "id": i.id,
-                "nom": i.name
-            })
-        return f'''
-            <html>
-                <body>
-                    <p>{donnees}</p>
-                </body>
-            </html>
-            '''
-    except:
-        return f'''
-            <html>
-                <body>
-                    <p>erreur</p>
-                </body>
-            </html>
-            '''
-
-@app.route('/user')
 def add_user():
     '''
     Vérifie si la colonne 'password' existe dans la table 'users' et l'ajoute si elle est absente.
@@ -71,3 +40,6 @@ def add_user():
                 return 'Colonne ajoutée'
     except Exception as e:
         return f'Problème : {str(e)}'
+
+
+    
