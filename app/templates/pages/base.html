@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="utf-8">
+        <title>{% block title %}TRHAA_IN - instrument de navigation{% endblock %}</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    </head>
+    <body>
+        <header>
+        <h1>TRHAA_IN - instrument de navigation</h1>
+        <div class="bloc_nav">
+        <nav>
+            <a href="{{ url_for('carto') }}">cartographie</a>
+            <a href="{{ url_for('frise_chronologique') }}">chronologie</a>
+            <a href="{{ url_for('graph') }}">graph</a>
+            <a href="{{ url_for('p_apropos') }}">à propos</a>
+        </nav>
+        </div>
+        <h2>{{ sous_titre }}</h2>
+        </header>
+        <main>
+        {% block nom_du_block %}
+        {%endblock%}
+        <div class="barre_recherche_simple">
+            <!-- {% include 'barre_recherche_simple.html' %} -->
+        </div>
+        <div class="barre_recherche_avancee">
+            <!-- {% include 'barre_recherche_avancee.html' %} -->
+        </div>
+        </main>
+        <footer>
+            <p><a href="{{ url_for('p_apropos') }}">À propos</a></p>
+        </footer>
+    </body>
+</html>
