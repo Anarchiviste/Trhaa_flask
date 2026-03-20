@@ -193,11 +193,17 @@ header {
     word-wrap: break-word;
 }
 
+.navbutton:hover{
+    background-color: var(--claret);
+    transition: max-height 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    opacity 160ms ease 60ms;
+    transition-delay: 0ms;
+}
 .navbutton:hover .navbutton-hide {
     opacity: 1;
     max-height: 100px;
-    background: var(--ink);
-    color: var(--stone);
+    background: var(--claret);
+    color: var(--paper);
     font-size: 0.8rem;
     transition: max-height 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
     opacity 160ms ease 60ms;
@@ -223,12 +229,69 @@ header {
     position: relative;
     z-index: 1;
     overflow: hidden;
-    margin: 2rem 5%;   /* vertical horizontal */
-    gap: 2rem;            /* espace entre les enfants si besoin */
+    margin: 2rem 5%;
+    gap: 2rem;
 }
 
 .display-main {
     border-right: 2px solid var(--lapis-dim);
     background-color: var(--paper);
     background-image: var(--grain);
+}
+
+/*Footer*/
+footer {
+    border-top: 3px solid var(--ink);
+    background-color: var(--paper-dark);
+    background-image: var(--grain);
+    position: relative;
+    overflow: hidden;
+}
+
+footer::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 6px;
+    background: var(--sienna);
+}
+
+.footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.2rem 3rem 1.2rem 3.5rem;
+    gap: 2rem;
+}
+
+.footer_logo img {
+    width: auto;
+    height: 48px;
+    object-fit: contain;
+    display: block;
+    filter: sepia(20%) contrast(1.05);
+    opacity: 0.85;
+    transition: opacity var(--transition), transform var(--transition);
+}
+
+.footer_logo img:hover {
+    opacity: 1;
+    transform: translate(-1px, -1px);
+}
+
+.footer-autor {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--stone);
+    letter-spacing: 0.1em;
+}
+
+.footer-autor a {
+    text-decoration: none;
+    color: inherit;
+
+}
+
+.footer-autor:hover{
+    color: var(--ink);
 }
