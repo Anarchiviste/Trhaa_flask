@@ -1,4 +1,5 @@
 from ..app import db
+from werkzeug.security import generate_password_hash
 
 
 # ----------------------------------------------------------------
@@ -14,13 +15,40 @@ class User(db.Model):
     def __repr__(self):
         return f'<User {self.name}>'
     
-'''    @staticmethod
+    @staticmethod
     def compte_utilisateur(nom, email, password):
         erreurs=[]
         if not nom:
             erreurs.append('Un pseudonyme est nécessaire')
+        if not email:
+            erreurs.append('Un mail est nécessaire')
         if not password or len(password) < 6:
-            erreurs.append('Le mot de passe est trop court')'''
+            erreurs.append('Le mot de passe est trop court')
+
+        unique = User.query.filter(
+            db.or_(User.name == nom, User.email == email)
+        ).count()
+
+        if unique > 0:
+            erreurs.append('Le nom existe déjà')
+
+        if len(erreurs) > 0:
+            return False, erreurs
+
+        utilisateur = User(
+            prenom=name,
+            email=email,
+            password=generate_password_hash(password) 
+        )
+
+        try:
+            db.session.add(utilisateur)
+            db.session.commit()
+            return True, utilisateur
+
+        except Exception as erreur:
+            return False, [str(erreur)]
+
 
 # ----------------------------------------------------------------
 # def_table_institution
