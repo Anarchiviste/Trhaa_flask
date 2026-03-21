@@ -14,7 +14,7 @@ db = SQLAlchemy(app)
 
 from .routes import generales
 
-def login():
+def password_initialisation():
     '''
     Vérifie si la colonne 'password' existe dans la table 'users' et l'ajoute si elle est absente.
 
@@ -54,4 +54,4 @@ def login():
     except Exception as e:
         app.logger.error(f'Problème : {str(e)}')
 
-login()
+password_initialisation()
