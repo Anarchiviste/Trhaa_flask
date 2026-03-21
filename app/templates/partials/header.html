@@ -12,10 +12,12 @@
             </a>
         </div>
             <div class="header-login">
-                <div class="header-login-logo">
-                    <img src="{{url_for('static', filename='img/user.png')}}" alt="login icon">
-                </div>
-                <p>Login</p>
+                <a href="{{url_for('login')}}">
+                    <div class="header-login-logo">
+                        <img src="{{url_for('static', filename='img/user.png')}}" alt="login icon">
+                    </div>
+                    <p>Login</p>
+                </a>
             </div>
     </div>
     <div class="navbar">
