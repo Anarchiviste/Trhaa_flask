@@ -11,6 +11,7 @@
                 <p>Explorer pour mieux comprendre</p>
             </a>
         </div>
+        <div class="header-auth">
             <div class="header-login">
                 <a href="{{url_for('login')}}">
                     <div class="header-login-logo">
@@ -19,36 +20,40 @@
                     <p>Login</p>
                 </a>
             </div>
+            <div class="header-signin">
+                <a href="{{url_for('signin')}}">
+                    <div class="header-signin-logo">
+                        <img src="{{url_for('static', filename='img/login.png')}}" alt="signin icon">
+                    </div>
+                    <p>Sign in</p>
+                </a>
+            </div>
+        </div>
     </div>
     <div class="navbar">
         <div class="navbutton">
             <a href="{{url_for('home')}}">
                 <p>Accueil</p>
-                <p class="navbutton-hide">Retour au menu d'accueil</p>
             </a>
         </div>
         <div class="navbutton">
             <a href="{{url_for('home')}}">
                 <p>Analyses de Réseaux</p>
-                <p class="navbutton-hide">Explorez l'historiographie par sujets</p>
             </a>
         </div>
         <div class="navbutton">
             <a href="{{url_for('home')}}">
                 <p>Chronologie</p>
-                <p class="navbutton-hide">Explorez l'historiographie par périodes historique</p>
             </a>
         </div>
         <div class="navbutton">
             <a href="{{url_for('home')}}">
                 <p>Cartographie</p>
-                <p class="navbutton-hide">Explorez l'historiographie par zones géographiques</p>
             </a>
         </div>
         <div class="navbutton">
             <a href="{{url_for('home')}}">
                 <p>A propos</p>
-                <p class="navbutton-hide">Quelques informations supplémentaires</p>
             </a>
         </div>
     </div>
