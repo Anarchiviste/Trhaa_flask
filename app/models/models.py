@@ -1,11 +1,12 @@
-from ..app import db
+from ..app import db, login
 from werkzeug.security import generate_password_hash
+from flask_login import UserMixin
 
 
 # ----------------------------------------------------------------
 # MODÈLE USER
 # ----------------------------------------------------------------
-class User(db.Model):
+class User(UserMixin, db.Model):
     __tablename__ = 'users'
 
     id    = db.Column(db.Integer, primary_key=True)
@@ -36,10 +37,10 @@ class User(db.Model):
             return False, erreurs
 
         utilisateur = User(
-            prenom=name,
+            name=nom,      
             email=email,
-            password=generate_password_hash(password) 
-        )
+            password=generate_password_hash(password)
+            )
 
         try:
             db.session.add(utilisateur)
@@ -48,6 +49,13 @@ class User(db.Model):
 
         except Exception as erreur:
             return False, [str(erreur)]
+
+    def get_id(self):
+        return self.id
+
+    @login.user_loader
+    def get_user_by_id(id):
+        return User.query.get(int(id))
 
 
 # ----------------------------------------------------------------
