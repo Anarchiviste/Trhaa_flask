@@ -1,5 +1,5 @@
 from ..app import db, login
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 
 
@@ -51,12 +51,24 @@ class User(UserMixin, db.Model):
             return False, [str(erreur)]
 
     def get_id(self):
-        return self.id
+        return str(self.id)
 
     @login.user_loader
     def get_user_by_id(id):
         return User.query.get(int(id))
 
+    
+    @staticmethod
+    def connexion(email, password):
+        try:
+            utilisateur = User.query.filter_by(email=email).first()
+            if not utilisateur:
+                return False, "Email ou mot de passe incorrect"
+            if not check_password_hash(utilisateur.password, password):
+                return False, "Email ou mot de passe incorrect"
+            return True, utilisateur
+        except Exception as e:
+            return False, f"Erreur interne: {str(e)}"
 
 # ----------------------------------------------------------------
 # def_table_institution
