@@ -1,18 +1,61 @@
-from ..app import db
+from ..app import db, login
+from werkzeug.security import generate_password_hash
+from flask_login import UserMixin
 
 
 # ----------------------------------------------------------------
 # MODÈLE USER
 # ----------------------------------------------------------------
-class User(db.Model):
+class User(UserMixin, db.Model):
     __tablename__ = 'users'
 
     id    = db.Column(db.Integer, primary_key=True)
     name  = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(150), unique=True, nullable=False)
-
+    password = db.Column(db.String(100), nullable=False)
     def __repr__(self):
         return f'<User {self.name}>'
+    
+    @staticmethod
+    def compte_utilisateur(nom, email, password):
+        erreurs=[]
+        if not nom:
+            erreurs.append('Un pseudonyme est nécessaire')
+        if not email:
+            erreurs.append('Un mail est nécessaire')
+        if not password or len(password) < 6:
+            erreurs.append('Le mot de passe est trop court')
+
+        unique = User.query.filter(
+            db.or_(User.name == nom, User.email == email)
+        ).count()
+
+        if unique > 0:
+            erreurs.append('Le nom existe déjà')
+
+        if len(erreurs) > 0:
+            return False, erreurs
+
+        utilisateur = User(
+            name=nom,      
+            email=email,
+            password=generate_password_hash(password)
+            )
+
+        try:
+            db.session.add(utilisateur)
+            db.session.commit()
+            return True, utilisateur
+
+        except Exception as erreur:
+            return False, [str(erreur)]
+
+    def get_id(self):
+        return self.id
+
+    @login.user_loader
+    def get_user_by_id(id):
+        return User.query.get(int(id))
 
 
 # ----------------------------------------------------------------
