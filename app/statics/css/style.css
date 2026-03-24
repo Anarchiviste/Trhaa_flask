@@ -335,3 +335,95 @@ footer::before {
 .footer-autor:hover{
     color: var(--ink);
 }
+
+/* FORMULAIRE */
+.formulaire {
+    max-width: 440px;
+    margin: 3rem auto;
+    background: var(--paper-dark);
+    border: 1px solid var(--paper-mid);
+    border-top: 3px solid var(--lapis);
+    border-radius: var(--radius-md);
+    padding: 2rem 2.2rem 2.4rem;
+    position: relative;
+}
+
+.formulaire::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    background: var(--ochre);
+    border-radius: var(--radius-md) 0 0 var(--radius-md);
+}
+
+.formulaire h2 {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 400;
+    color: var(--ink);
+    margin-bottom: 1.8rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid var(--paper-mid);
+    letter-spacing: -0.01em;
+}
+
+.formulaire form > div {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 1.2rem;
+}
+
+.formulaire label {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--stone);
+}
+
+.formulaire input {
+    background: var(--paper);
+    border: 1px solid var(--paper-mid);
+    border-radius: var(--radius);
+    padding: 0.55rem 0.8rem;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    color: var(--ink);
+    outline: none;
+    transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.formulaire input::placeholder {
+    color: var(--stone-light);
+    font-style: italic;
+}
+
+.formulaire input:focus {
+    border-color: var(--lapis);
+    box-shadow: 0 0 0 3px rgba(46, 79, 122, 0.12);
+}
+
+.formulaire input:hover:not(:focus) {
+    border-color: var(--stone-light);
+}
+
+.erreur {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--sienna);
+    letter-spacing: 0.04em;
+    margin-top: 2px;
+}
+
+.formulaire input[type="submit"] {
+    width: 100%;
+    margin-top: 0.6rem;
+    background: var(--lapis);
+    color: var(--paper);
+    border: 1px solid var(--lapis-dim);
+    border-radius: var(--radius);
+    padding: 0.65rem 1.2rem;
+    font-family: var(--font-mono);
+    font-size: 0.72
