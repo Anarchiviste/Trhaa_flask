@@ -428,3 +428,155 @@ footer::before {
     font-family: var(--font-mono);
     font-size: 0.72
 }
+
+/* Formulaire recherche avancee */
+
+.formulaire_recherche_avancee {
+    max-width: 2500px;
+    margin: 3rem auto;
+    background: var(--paper-dark);
+    border: 1px solid var(--paper-mid);
+    border-top: 3px solid var(--ochre);
+    border-radius: 4px;
+    padding: 2rem 2.2rem 2.4rem;
+    position: relative;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.formulaire_recherche_avancee::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    background: var(--ochre);
+    border-radius: 4px 0 0 4px;
+}
+
+.formulaire_recherche_avancee h2 {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 400;
+    color: var(--ink);
+    margin-bottom: 1.8rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid var(--paper-mid);
+    letter-spacing: -0.01em;
+}
+
+.formulaire_recherche_avancee form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.formulaire_recherche_avancee div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.formulaire_recherche_avancee label {
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    color: var(--stone);
+    letter-spacing: 0.05em;
+}
+
+.formulaire_recherche_avancee input[type="text"],
+.formulaire_recherche_avancee input[type="email"],
+.formulaire_recherche_avancee input[type="password"] {
+    background: var(--paper);
+    border: 1px solid var(--paper-mid);
+    border-radius: 2px;
+    padding: 0.65rem 0.8rem;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 220ms ease, box-shadow 220ms ease;
+}
+
+.formulaire_recherche_avancee input[type="text"]::placeholder,
+.formulaire_recherche_avancee input[type="email"]::placeholder,
+.formulaire_recherche_avancee input[type="password"]::placeholder {
+    color: var(--stone-light);
+    font-style: italic;
+}
+
+.formulaire_recherche_avancee input[type="text"]:focus,
+.formulaire_recherche_avancee input[type="email"]:focus,
+.formulaire_recherche_avancee input[type="password"]:focus {
+    border-color: var(--lapis);
+    box-shadow: 0 0 0 3px rgba(46, 79, 122, 0.12);
+}
+
+.formulaire_recherche_avancee input[type="text"]:hover:not(:focus),
+.formulaire_recherche_avancee input[type="email"]:hover:not(:focus),
+.formulaire_recherche_avancee input[type="password"]:hover:not(:focus) {
+    border-color: var(--stone-light);
+}
+
+.formulaire_recherche_avancee .erreur {
+    font-family: var(--font-body);
+    font-size: 0.7rem;
+    color: var(--sienna);
+    letter-spacing: 0.04em;
+    margin-top: 0.2rem;
+}
+
+.formulaire_recherche_avancee input[type="submit"] {
+    width: 100%;
+    margin-top: 0.6rem;
+    background: var(--lapis);
+    color: var(--paper);
+    border: 1px solid var(--lapis-dim);
+    border-radius: 2px;
+    padding: 0.75rem 1.2rem;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: background 220ms ease, transform 120ms ease;
+}
+
+.formulaire_recherche_avancee input[type="submit"]:hover {
+    background: var(--lapis-dim);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.formulaire_recherche_avancee input[type="submit"]:active {
+    transform: translateY(0);
+}
+
+.formulaire_recherche_avancee table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    margin-top: 0.5rem;
+}
+
+.formulaire_recherche_avancee table th{
+    border: 1px solid var(--ink);
+    background-color: var(--ink);
+    color: var(--paper);
+    padding: 0.4rem 0.6rem;
+    text-align: left;
+    font-weight: 400;
+    text-transform: lowercase;
+}
+
+.formulaire_recherche_avancee table td {
+    border: 1px solid var(--ink);
+    padding: 0.4rem 0.6rem;
+    text-align: left;
+    font-weight: 400;
+    text-transform: lowercase;
+}
+
+.formulaire_recherche_avancee table tr:hover{
+    background-color: var(--stone-light);
+}
