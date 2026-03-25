@@ -11,6 +11,32 @@ def home():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    '''
+    FlaskForm LoginUtilisateur pour authentifier un utilisateur existant.
+
+    Comportement :
+        - Initialise le formulaire avec la classe LoginUtilisateur
+        - Récupère les données avec validate_on_submit()
+        - Vérifie l'authenticité des identifiants (email/mot de passe)
+        - Si la connexion est réussie, redirige vers la page d'accueil
+        - Sinon, réaffiche la page de login avec un message d'erreur
+
+    Retourne :
+        Connexion réussie
+            - Redirige vers la route home avec un message flash de succès.
+        Connexion échouée
+            - Réaffiche la page login.html avec le message d'erreur et le formulaire.
+        Formulaire non soumis/valide
+            - Affiche la page login.html avec le formulaire.
+        
+    Dépendances :
+        - Flask
+        - Flask-Login
+        - Flask-WTF
+        - Flask-SQLAlchemy
+        - User.connexion : Méthode statique pour vérifier les identifiants utilisateur
+        - Flaskform LoginUtilisateur
+    '''
     form = LoginUtilisateur()
     if form.validate_on_submit():
         statut, donnees = User.connexion(
@@ -28,6 +54,37 @@ def login():
 
 @app.route('/signin', methods=['GET', 'POST'])
 def signin():
+    '''
+    FlaskForm AjoutUtilisateur pour créer un nouveau compte.
+
+    Comportement :
+        - Initialise le formulaire avec la bonne classe
+        - Récupère les données avec validate_on_submit()
+        - Vérifie l'intégrité des champs reçus
+        - Si l'ajout est réussi, renvoit vers le login, 
+        sinon renvoit de nouveau vers le signin
+
+    Retourne : 
+        Création réussie
+            - Redirige vers la route login avec un message flash de succès.
+        Création échouée
+            - Réaffiche la page sign-in.html avec les erreurs et le formulaire.
+        Formulaire non soumis/valide
+            - Affiche la page sign-in.html avec le formulaire.
+        
+    Dépendances : 
+        - Flask
+        - Flask-Login
+        - Flask-WTF
+        - Flask-SQLAlchemy
+        - User.compte_utilisateur : Méthode statique pour créer un compte utilisateur.
+        - Flaskform AjoutUtilistateur
+
+    Notes : 
+        Validation des données : Le formulaire est validé côté serveur pour éviter les soumissions malveillantes.
+        Hachage des mots de passe : Les mots de passe sont hachés avant d'être stockés en base de données.
+
+    '''
     form = AjoutUtilisateur()
 
     if form.validate_on_submit():

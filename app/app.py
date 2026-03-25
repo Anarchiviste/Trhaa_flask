@@ -57,4 +57,5 @@ def password_initialisation():
     except Exception as e:
         app.logger.error(f'Problème : {str(e)}')
 
+
 password_initialisation()
