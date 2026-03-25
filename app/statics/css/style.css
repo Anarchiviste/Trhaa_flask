@@ -435,8 +435,8 @@ footer::before {
     max-width: 2500px;
     margin: 3rem auto;
     background: var(--paper-dark);
-    border: 1px solid var(--paper-mid);
-    border-top: 3px solid var(--ochre);
+    border: 1px solid var(--ochre);
+    border-top: 3px solid var(--lapis);
     border-radius: 4px;
     padding: 2rem 2.2rem 2.4rem;
     position: relative;
