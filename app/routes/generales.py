@@ -112,7 +112,7 @@ def signin():
 
 login.login_view = 'connexion'
 
-@app.route('/recherche-avancee', methods=['GET', 'POST'])
+@app.route('/e_recherche_avancee', methods=['GET', 'POST'])
 def e_recherche_avancee():
     options = get_options_filtres()
     resultats = None
