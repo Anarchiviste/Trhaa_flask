@@ -3,9 +3,10 @@ from flask import render_template, redirect, url_for, flash, request
 from ..models.models import User, DefTableInstitution, DefAuteur, DefPublication, DefLiaisonSujets, WikidataArchaeologicalSites, WikidataPersons, WikidataPlaces, WikidataConcepts, WikidataOrganizations, WikidataArtMovements, WikidataTimePeriods
 from sqlalchemy import text, inspect
 from ..models.formulaires import AjoutUtilisateur, LoginUtilisateur
+from ..utils.recherche_avancee import recherche_avancee, get_options_filtres
 
 @app.route('/')
-@app.route('/home')
+@app.route('/home', methods=['GET', 'POST'])
 def home():
     return render_template('pages/home.html')
 
@@ -111,3 +112,24 @@ def signin():
 
 login.login_view = 'connexion'
 
+@app.route('/recherche-avancee', methods=['GET', 'POST'])
+def e_recherche_avancee():
+    options = get_options_filtres()
+    resultats = None
+
+    if request.method == 'POST':
+        resultats = recherche_avancee(
+            auteur       = request.form.get('auteur'),
+            institution  = request.form.get('institution'),
+            typologie    = request.form.get('typologie'),
+            langue       = request.form.get('langue'),
+            date_min     = request.form.get('date_min'),
+            date_max     = request.form.get('date_max'),
+            sujet_rameau = request.form.get('sujet_rameau'),
+        )
+
+    return render_template(
+        'pages/recherche_avancee.html',
+        options=options,
+        resultats=resultats
+    )
