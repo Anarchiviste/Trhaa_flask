@@ -1,0 +1,15 @@
+{% if historique %}
+    <p>{{ historique|length }} recherche(s) enregistrée(s)</p>
+    <table>
+        <tr>
+            <th>Recherche</th>
+        </tr>
+        {% for entree in historique %}
+        <tr>
+            <td>{{ entree.user_request }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+{% else %}
+    <p>Aucune recherche enregistrée.</p>
+{% endif %}

@@ -1,6 +1,6 @@
 from ..app import db, login
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import UserMixin
+from flask_login import UserMixin, login_user
 
 
 # ----------------------------------------------------------------
@@ -63,12 +63,14 @@ class User(UserMixin, db.Model):
         try:
             utilisateur = User.query.filter_by(email=email).first()
             if not utilisateur:
-                return False, "Email ou mot de passe incorrect"
+                return False, "Email introuvable"
             if not check_password_hash(utilisateur.password, password):
-                return False, "Email ou mot de passe incorrect"
+                return False, "Mot de passe incorrect"
+            login_user(utilisateur)                # ← établit la session Flask-Login
             return True, utilisateur
         except Exception as e:
             return False, f"Erreur interne: {str(e)}"
+
 
 class Historique(db.Model):
     __tablename__ = 'historique'

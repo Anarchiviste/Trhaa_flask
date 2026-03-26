@@ -15,6 +15,10 @@ db = SQLAlchemy(app)
 
 login = LoginManager(app)
 
+login.login_view = 'login'        # ← nom de la fonction de la route login
+login.login_message = "Veuillez vous connecter pour accéder à cette page."
+login.login_message_category = "error"
+
 from .routes import generales
 
 def password_initialisation():
@@ -99,4 +103,5 @@ def historique_initialisation():
     except Exception as e:
         app.logger.error(f'Problème : {str(e)}')
 
+password_initialisation()
 historique_initialisation()

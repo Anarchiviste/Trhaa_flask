@@ -1,9 +1,10 @@
 from ..app import app, db
 from flask import render_template, redirect, url_for, flash, request
-from ..models.models import User, DefTableInstitution, DefAuteur, DefPublication, DefLiaisonSujets, WikidataArchaeologicalSites, WikidataPersons, WikidataPlaces, WikidataConcepts, WikidataOrganizations, WikidataArtMovements, WikidataTimePeriods
+from ..models.models import User, DefTableInstitution, DefAuteur, DefPublication, DefLiaisonSujets, WikidataArchaeologicalSites, WikidataPersons, WikidataPlaces, WikidataConcepts, WikidataOrganizations, WikidataArtMovements, WikidataTimePeriods, Historique
 from sqlalchemy import text, inspect
 from ..models.formulaires import AjoutUtilisateur, LoginUtilisateur
 from ..utils.recherche_avancee import recherche_avancee, get_options_filtres
+from flask_login import current_user, login_required, logout_user
 
 @app.route('/')
 @app.route('/home', methods=['GET', 'POST'])
@@ -14,29 +15,36 @@ def home():
 def login():
     '''
     FlaskForm LoginUtilisateur pour authentifier un utilisateur existant.
-
     Comportement :
+        - Redirige vers home si l'utilisateur est déjà authentifié
         - Initialise le formulaire avec la classe LoginUtilisateur
         - Récupère les données avec validate_on_submit()
         - Vérifie l'authenticité des identifiants (email/mot de passe)
-        - Si la connexion est réussie, redirige vers la page d'accueil
+        - Si la connexion est réussie, redirige vers la page demandée initialement
+          ou vers home si aucune page n'était demandée
         - Sinon, réaffiche la page de login avec un message d'erreur
-
     Retourne :
+        Utilisateur déjà connecté
+            - Redirige immédiatement vers la route home.
         Connexion réussie
-            - Redirige vers la route home avec un message flash de succès.
+            - Redirige vers la route 'next' (page demandée initialement) ou home,
+              avec un message flash de succès.
         Connexion échouée
             - Réaffiche la page login.html avec le message d'erreur et le formulaire.
         Formulaire non soumis/valide
             - Affiche la page login.html avec le formulaire.
-        
     Dépendances :
         - Flask
-        - Flask-Login
+        - Flask-Login : login_user, current_user
         - Flask-WTF
         - Flask-SQLAlchemy
         - User.connexion : Méthode statique pour vérifier les identifiants utilisateur
-        - Flaskform LoginUtilisateur
+        - LoginUtilisateur : FlaskForm de connexion
+    Notes :
+        - login_view doit être configuré dans app.py via login.login_view = 'login'
+          pour que @login_required redirige correctement vers cette route
+        - Le paramètre 'next' est géré automatiquement par Flask-Login lors d'une
+          tentative d'accès à une route protégée par @login_required
     '''
     form = LoginUtilisateur()
     if form.validate_on_submit():
@@ -47,7 +55,8 @@ def login():
         if statut is True:
             flash("Connexion réussie", "success")
             app.logger.info('login success')
-            return redirect(url_for('home'))
+            next_page = request.args.get('next')
+            return redirect(next_page or url_for('home'))
         else:
             flash(donnees, "error")
             app.logger.info('login no success')
@@ -110,8 +119,6 @@ def signin():
         app.logger.info('lancement de la page de sign-in')
         return render_template('pages/sign-in.html', form=form)
 
-login.login_view = 'connexion'
-
 @app.route('/e_recherche_avancee', methods=['GET', 'POST'])
 def e_recherche_avancee():
     options = get_options_filtres()
@@ -134,6 +141,18 @@ def e_recherche_avancee():
         resultats=resultats
     )
 
-@app.route('/ui', methods=['GET', 'POST'])
-def ui():
-    return render_template('/pages/ui.html')
+@app.route('/historique', methods=['GET', 'POST'])
+@login_required
+def historique():
+    historique = Historique.query.filter_by(
+        id_user=current_user.id                         
+        ).order_by(Historique.id.desc()).all()             
+    return render_template('pages/ui.html', historique=historique)
+
+
+@app.route('/logout', methods=['GET', 'POST'])
+def logout():
+    if current_user.is_authenticated is True:
+        logout_user()
+    flash('Vous êtes déconnecté', 'info')
+    return redirect(url_for("home"))
