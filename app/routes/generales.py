@@ -133,3 +133,7 @@ def e_recherche_avancee():
         options=options,
         resultats=resultats
     )
+
+@app.route('/ui', methods=['GET', 'POST'])
+def ui():
+    return render_template('/pages/ui.html')

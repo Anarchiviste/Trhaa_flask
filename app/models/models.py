@@ -70,6 +70,13 @@ class User(UserMixin, db.Model):
         except Exception as e:
             return False, f"Erreur interne: {str(e)}"
 
+class Historique(db.Model):
+    __tablename__ = 'historique'
+
+    id = db.Column(db.Integer, primary_key = True, autoincrement=True)
+    id_user = db.Column(db.Text, nullable=False)
+    user_request = db.Column(db.Text, nullable=False)
+
 # ----------------------------------------------------------------
 # def_table_institution
 # ----------------------------------------------------------------
