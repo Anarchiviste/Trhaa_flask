@@ -5,6 +5,7 @@ from sqlalchemy import text, inspect
 from ..models.formulaires import AjoutUtilisateur, LoginUtilisateur
 from ..utils.recherche_avancee import recherche_avancee, get_options_filtres
 from flask_login import current_user, login_required, logout_user
+from datetime import datetime
 
 @app.route('/')
 @app.route('/home', methods=['GET', 'POST'])
@@ -120,35 +121,66 @@ def signin():
         return render_template('pages/sign-in.html', form=form)
 
 @app.route('/e_recherche_avancee', methods=['GET', 'POST'])
+@login_required
 def e_recherche_avancee():
     options = get_options_filtres()
     resultats = None
 
     if request.method == 'POST':
+        # Récupère les paramètres de la recherche avancée
+        auteur = request.form.get('auteur')
+        institution = request.form.get('institution')
+        typologie = request.form.get('typologie')
+        langue = request.form.get('langue')
+        date_min = request.form.get('date_min')
+        date_max = request.form.get('date_max')
+        sujet_rameau = request.form.get('sujet_rameau')
+
+        # Effectue la recherche
         resultats = recherche_avancee(
-            auteur       = request.form.get('auteur'),
-            institution  = request.form.get('institution'),
-            typologie    = request.form.get('typologie'),
-            langue       = request.form.get('langue'),
-            date_min     = request.form.get('date_min'),
-            date_max     = request.form.get('date_max'),
-            sujet_rameau = request.form.get('sujet_rameau'),
+            auteur=auteur,
+            institution=institution,
+            typologie=typologie,
+            langue=langue,
+            date_min=date_min,
+            date_max=date_max,
+            sujet_rameau=sujet_rameau,
         )
 
+        # Enregistre la requête dans l'historique
+        historique_entry = Historique(
+            id_user=str(current_user.id),
+            nom_user=current_user.name,
+            result_author = auteur,
+            result_institution= institution,
+            result_date_min= date_min,
+            result_date_max= date_max,
+            result_langue = langue,
+            result_sujet_rameau = sujet_rameau,
+            timestamp=datetime.now().strftime('%d/%m/%Y %H:%M:%S')
+        )
+        db.session.add(historique_entry)
+        db.session.commit()
+        
     return render_template(
         'pages/recherche_avancee.html',
         options=options,
         resultats=resultats
     )
+    
 
-@app.route('/historique', methods=['GET', 'POST'])
+from flask import render_template
+from flask_login import current_user, login_required
+
+@app.route('/historique', methods=['GET'])
 @login_required
 def historique():
+    # Récupère l'historique de l'utilisateur connecté
     historique = Historique.query.filter_by(
-        id_user=current_user.id                         
-        ).order_by(Historique.id.desc()).all()             
-    return render_template('pages/ui.html', historique=historique)
+        id_user=str(current_user.id)  # Convertir l'ID en string pour correspondre au type VARCHAR
+    ).order_by(Historique.id.desc()).all()  # Trie par ordre décroissant (le plus récent en premier)
 
+    return render_template('pages/historique.html', historique=historique)
 
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():

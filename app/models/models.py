@@ -71,13 +71,21 @@ class User(UserMixin, db.Model):
         except Exception as e:
             return False, f"Erreur interne: {str(e)}"
 
-
 class Historique(db.Model):
     __tablename__ = 'historique'
 
-    id = db.Column(db.Integer, primary_key = True, autoincrement=True)
-    id_user = db.Column(db.Text, nullable=False)
-    user_request = db.Column(db.Text, nullable=False)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id_user = db.Column(db.String(100), nullable=False)
+    nom_user = db.Column(db.String(100), nullable=False)  
+    result_author = db.Column(db.String(100), nullable=False)
+    result_title = db.Column(db.String(200), nullable=False)
+    result_institution = db.Column(db.String(100), nullable=False)
+    result_date_min = db.Column(db.String(100), nullable=False)
+    result_date_max = db.Column(db.String(100), nullable=False)
+    result_langue = db.Column(db.String(100), nullable=False)
+    result_sujet_rameau = db.Column(db.String(100), nullable=False)
+    timestamp = db.Column(db.String(100), nullable=False)
+    
 
 # ----------------------------------------------------------------
 # def_table_institution

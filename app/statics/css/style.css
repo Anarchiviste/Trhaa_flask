@@ -567,3 +567,37 @@ footer::before {
 .formulaire_recherche_avancee table tr:hover{
     background-color: var(--stone-light);
 }
+
+/* historique */
+
+/* Styles pour le tableau d'historique */
+.historique-container table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    margin-top: 0.5rem;
+}
+
+.historique-container table th {
+    border: 1px solid var(--ink);
+    background-color: var(--ink);
+    color: var(--paper);
+    padding: 0.4rem 0.6rem;
+    text-align: left;
+    font-weight: 400;
+    text-transform: lowercase;
+}
+
+.historique-container table td {
+    border: 1px solid var(--ink);
+    padding: 0.4rem 0.6rem;
+    text-align: left;
+    font-weight: 400;
+    text-transform: lowercase;
+}
+
+.historique-container table tr:hover {
+    background-color: var(--paper-mid);
+}

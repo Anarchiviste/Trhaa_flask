@@ -1,15 +1,35 @@
 {% if historique %}
-    <p>{{ historique|length }} recherche(s) enregistrée(s)</p>
-    <table>
-        <tr>
-            <th>Recherche</th>
-        </tr>
-        {% for entree in historique %}
-        <tr>
-            <td>{{ entree.user_request }}</td>
-        </tr>
-        {% endfor %}
+<div class="historique-container">
+    <table class="historique-table">
+        <thead>
+            <tr>
+                <th>Recherche</th>
+                <th>Auteur</th>
+                <th>Titre</th>
+                <th>Institution</th>
+                <th>Langue</th>
+                <th>Sujet Rameau</th>
+                <th>Date Min</th>
+                <th>Date Max</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entree in historique %}
+            <tr>
+                <td>{{ entree.result_author }}</td>
+                <td>{{ entree.result_title }}</td>
+                <td>{{ entree.result_institution }}</td>
+                <td>{{ entree.result_langue }}</td>
+                <td>{{ entree.result_sujet_rameau }}</td>
+                <td>{{ entree.result_date_min }}</td>
+                <td>{{ entree.result_date_max }}</td>
+                <td>{{ entree.timestamp }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
+</div>
 {% else %}
-    <p>Aucune recherche enregistrée.</p>
+    <p class="historique-vide">Aucune recherche enregistrée.</p>
 {% endif %}
