@@ -18,6 +18,24 @@ class User(UserMixin, db.Model):
     
     @staticmethod
     def compte_utilisateur(nom, email, password):
+        """
+        Valide et crée un nouveau compte utilisateur en base de données.
+
+        Comportements :
+        - Valide la présence et la longueur minimale (6 car.) des trois champs
+        - Vérifie l'unicité du nom et de l'email dans la table User (OR logique)
+        - Hache le mot de passe avant persistance via generate_password_hash
+        - Retourne les erreurs accumulées sans interrompre à la première rencontrée
+        - Encapsule le commit dans un try/except pour capturer les erreurs base
+
+        Retourne :
+        - (False, list[str]) : en cas d'erreur de validation ou d'exception base
+        - (True,  User)      : en cas de création réussie, avec l'objet User créé
+
+        Dépendances :
+        - models          : User, db.session, db.or_
+        - werkzeug.security : generate_password_hash
+        """        
         erreurs=[]
         if not nom:
             erreurs.append('Un pseudonyme est nécessaire')
@@ -55,6 +73,21 @@ class User(UserMixin, db.Model):
 
     @login.user_loader
     def get_user_by_id(id):
+        """
+        Callback Flask-Login reconstituant un utilisateur depuis son id de session.
+
+        Comportements :
+        - Enregistré auprès de l'instance LoginManager via @login.user_loader
+        - Convertit l'id (str) en entier avant la requête
+        - Retourne None implicitement si aucun utilisateur n'est trouvé (comportement Query.get)
+
+        Retourne :
+        - User | None : l'objet User correspondant, ou None si introuvable
+
+        Dépendances :
+        - flask_login : LoginManager (login)
+        - models      : User
+        """
         return User.query.get(int(id))
 
     
