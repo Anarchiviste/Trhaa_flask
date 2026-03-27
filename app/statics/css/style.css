@@ -601,3 +601,42 @@ footer::before {
 .historique-container table tr:hover {
     background-color: var(--paper-mid);
 }
+
+.historique-container button {
+    /* Dimensions */
+    padding: 10px 20px;
+    min-width: 60px;
+
+    /* Couleurs */
+    background-color: var(--ink);
+    color: var(--paper);
+    border: none;
+
+    /* Typographie */
+    font-size: 0.9rem;
+    font-weight: 600;
+
+    /* Forme */
+    border-radius: 6px;
+    cursor: pointer;
+
+    /* Transitions */
+    transition: background var(--transition), 
+                opacity var(--transition),
+                transform var(--transition);
+
+    /* Placement */
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.historique-container button:active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.historique-container button:hover{
+    background-color: var(--claret);
+}

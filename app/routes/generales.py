@@ -146,41 +146,45 @@ def e_recherche_avancee():
             date_max=date_max,
             sujet_rameau=sujet_rameau,
         )
-
-        # Enregistre la requête dans l'historique
-        historique_entry = Historique(
-            id_user=str(current_user.id),
-            nom_user=current_user.name,
-            result_author = auteur,
-            result_institution= institution,
-            result_date_min= date_min,
-            result_date_max= date_max,
-            result_langue = langue,
-            result_sujet_rameau = sujet_rameau,
-            timestamp=datetime.now().strftime('%d/%m/%Y %H:%M:%S')
-        )
-        db.session.add(historique_entry)
-        db.session.commit()
+        
+        app.logger.info(f'{print(resultats[0])}')
+        if resultats:
+            for res in resultats:
+                historique_entry = Historique(
+                    id_user           = str(current_user.id),
+                    nom_user          = current_user.name,
+                    result_author     = f"{res.get('auteur_nom')} {res.get('auteur_prenom')}"  or '',
+                    result_title      = res.get('titre')       or '',
+                    result_institution= res.get('institution') or '',
+                    result_date_min   = res.get('date_publication') or '',
+                    result_typologie   = res.get('typologie')    or '',
+                    result_langue     = res.get('langue')      or '',
+                    result_sujet_rameau = res.get('sujet_rameau') or '',
+                    timestamp         = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
+                )
+                db.session.add(historique_entry)
+                db.session.commit()
         
     return render_template(
         'pages/recherche_avancee.html',
         options=options,
         resultats=resultats
     )
-    
-
-from flask import render_template
-from flask_login import current_user, login_required
 
 @app.route('/historique', methods=['GET'])
 @login_required
 def historique():
-    # Récupère l'historique de l'utilisateur connecté
     historique = Historique.query.filter_by(
-        id_user=str(current_user.id)  # Convertir l'ID en string pour correspondre au type VARCHAR
-    ).order_by(Historique.id.desc()).all()  # Trie par ordre décroissant (le plus récent en premier)
+        id_user=str(current_user.id)
+    ).order_by(Historique.id.desc()).all() 
+        
+    historique_json = [entree.to_dict() for entree in historique]
 
-    return render_template('pages/historique.html', historique=historique)
+    return render_template(
+        'pages/historique.html',
+        historique=historique,
+        historique_json=historique_json
+    )
 
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():

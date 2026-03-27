@@ -99,7 +99,7 @@ def historique_initialisation():
                                 result_title VARCHAR(200),
                                 result_institution VARCHAR(100),
                                 result_date_min VARCHAR(100),
-                                result_date_max VARCHAR(100),
+                                result_typologie VARCHAR(100),
                                 result_langue VARCHAR(100),
                                 result_sujet_rameau VARCHAR(100),
                                 timestamp VARCHAR(100)

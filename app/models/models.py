@@ -81,10 +81,22 @@ class Historique(db.Model):
     result_title = db.Column(db.String(200), nullable=False)
     result_institution = db.Column(db.String(100), nullable=False)
     result_date_min = db.Column(db.String(100), nullable=False)
-    result_date_max = db.Column(db.String(100), nullable=False)
+    result_typologie = db.Column(db.String(100), nullable=False)
     result_langue = db.Column(db.String(100), nullable=False)
     result_sujet_rameau = db.Column(db.String(100), nullable=False)
     timestamp = db.Column(db.String(100), nullable=False)
+    
+    def to_dict(self):
+        return {
+            "auteur":        self.result_author,
+            "titre":         self.result_title,
+            "institution":   self.result_institution,
+            "langue":        self.result_langue,
+            "sujet_rameau":  self.result_sujet_rameau,
+            "date_min":      self.result_date_min,
+            "typologie":      self.result_typologie,
+            "date":          self.timestamp,
+        }
     
 
 # ----------------------------------------------------------------
