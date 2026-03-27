@@ -5,6 +5,7 @@ from sqlalchemy import text, inspect
 from ..models.formulaires import AjoutUtilisateur, LoginUtilisateur
 from ..utils.recherche_avancee import recherche_avancee, get_options_filtres
 
+
 @app.route('/')
 @app.route('/home', methods=['GET', 'POST'])
 def home():
@@ -112,11 +113,19 @@ def signin():
 
 login.login_view = 'connexion'
 
+'''
 @app.route('/e_recherche_avancee', methods=['GET', 'POST'])
 def e_recherche_avancee():
-    options = get_options_filtres()
     resultats = None
+    if request.method == "POST":
+        # ta logique de filtrage existante
+        resultats = Publication.query.filter(...).all()
+    return render_template("pages/home.html", resultats=resultats)'''
 
+'''Rajout d'un processeur pour transformer la recherche avancée en encart statique sur chaque page'''
+
+@app.route('/e_recherche_avancee', methods=['GET', 'POST'])
+def e_recherche_avancee():
     if request.method == 'POST':
         resultats = recherche_avancee(
             auteur       = request.form.get('auteur'),
@@ -127,9 +136,14 @@ def e_recherche_avancee():
             date_max     = request.form.get('date_max'),
             sujet_rameau = request.form.get('sujet_rameau'),
         )
+        return render_template('pages/recherche_avancee.html', resultats=resultats)
 
-    return render_template(
-        'pages/recherche_avancee.html',
-        options=options,
-        resultats=resultats
+    return render_template('pages/recherche_avancee.html')
+
+
+@app.context_processor
+def inject_recherche():
+    return dict(
+        options=get_options_filtres(),
+        resultats=None
     )
