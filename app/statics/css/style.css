@@ -602,6 +602,15 @@ footer::before {
     background-color: var(--paper-mid);
 }
 
+.historique-container h1 {
+    font-family: var(--font-mono);
+    font-size: clamp(1rem);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1;
+    color: var(--lapis-dim);    
+}
+
 .historique-container button {
     /* Dimensions */
     padding: 10px 20px;
@@ -630,6 +639,7 @@ footer::before {
     align-items: center;
     gap: 8px;
     margin-bottom: 16px;
+    margin-top: 16px;
 }
 
 .historique-container button:active {

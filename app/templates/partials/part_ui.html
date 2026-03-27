@@ -1,7 +1,6 @@
 {% if historique %}
 <div class="historique-container">
     <h1> Votre Historique de recherche </h1>
-    <button onclick="telechargerJSON()">⬇ Télécharger en JSON</button>
 
     <table class="historique-table">
         <thead>
@@ -31,6 +30,8 @@
             {% endfor %}
         </tbody>
     </table>
+    
+    <button onclick="telechargerJSON()">⬇ Télécharger en JSON</button>
 </div>
 
 <script id="historique-data" type="application/json">
