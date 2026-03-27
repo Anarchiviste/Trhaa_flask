@@ -123,6 +123,32 @@ def signin():
 @app.route('/e_recherche_avancee', methods=['GET', 'POST'])
 @login_required
 def e_recherche_avancee():
+    """
+    Route Flask gérant la recherche avancée de ressources documentaires et la
+    persistance de ses résultats en historique utilisateur.
+
+    Comportements :
+        - Charge les options de filtres disponibles à chaque appel (GET et POST)
+        - En GET  : affiche le formulaire de recherche vide
+        - En POST : récupère les 7 filtres soumis (auteur, institution, typologie,
+                    langue, date_min, date_max, sujet_rameau) et exécute la recherche
+        - Itère sur chaque résultat retourné et crée une entrée Historique en base
+        - Compose le nom complet de l'auteur depuis auteur_nom + auteur_prenom
+        - Effectue un commit par résultat (dans la boucle)
+        - Logue le premier résultat brut via app.logger.info pour le débogage
+
+    Retourne :
+        - render_template('pages/recherche_avancee.html') avec :
+            - options  : dict des filtres disponibles pour alimenter le formulaire
+            - resultats: liste de dicts des documents trouvés (None si GET ou aucun résultat)
+
+    Dépendances :
+        - Flask        : request, render_template, current_app (app.logger)
+        - flask_login  : login_required, current_user
+        - helpers      : get_options_filtres(), recherche_avancee()
+        - models       : Historique (SQLAlchemy ORM), db.session
+        - stdlib       : datetime
+    """    
     options = get_options_filtres()
     resultats = None
 
@@ -174,6 +200,24 @@ def e_recherche_avancee():
 @app.route('/historique', methods=['GET'])
 @login_required
 def historique():
+    """
+    Route Flask affichant l'historique des recherches de l'utilisateur connecté.
+
+    Comportements :
+        - Interroge la table Historique en filtrant sur l'id de l'utilisateur courant
+        - Trie les entrées par id décroissant (résultats les plus récents en premier)
+        - Sérialise l'ensemble des entrées en liste de dicts via to_dict()
+        - Passe les données sous deux formes au template : objets ORM et JSON
+
+    Retourne :
+        - render_template('pages/historique.html') avec :
+            - historique      : liste d'objets Historique (accès aux attributs ORM dans le template)
+            - historique_json : liste de dicts sérialisés (prête pour un usage JS/JSON dans le template)
+
+    Dépendances :
+        - flask_login : login_required, current_user
+        - models      : Historique (SQLAlchemy ORM)
+    """    
     historique = Historique.query.filter_by(
         id_user=str(current_user.id)
     ).order_by(Historique.id.desc()).all() 
@@ -188,6 +232,22 @@ def historique():
 
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
+    """
+    Route Flask gérant la déconnexion de l'utilisateur courant.
+
+    Comportements :
+        - Vérifie que l'utilisateur est bien authentifié avant d'agir
+        - Appelle logout_user() pour invalider la session Flask-Login
+        - Envoie un message flash de confirmation à l'utilisateur
+        - Redirige vers la page d'accueil après déconnexion
+
+    Retourne :
+        - redirect(url_for("home")) : redirection vers la route 'home'
+
+    Dépendances :
+        - Flask       : redirect, url_for, flash
+        - flask_login : current_user, logout_user
+    """    
     if current_user.is_authenticated is True:
         logout_user()
     flash('Vous êtes déconnecté', 'info')
