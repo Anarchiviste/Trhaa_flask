@@ -227,3 +227,6 @@ class WikidataTimePeriods(db.Model):
 
     def __repr__(self):
         return f'<wikidata_time_periods {self.qid} — {self.labelFr}>'
+
+# Afficher les résultat du pays
+
