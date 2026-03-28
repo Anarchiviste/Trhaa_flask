@@ -55,7 +55,6 @@ for db_name, en_name in COUNTRY_MAP.items():
 @app.route('/p_carto')
 def p_carto():
     # Collecte les noms français distincts des pays ayant ≥ 1 publication
-    # via les trois tables géographiques liées à def_liaison_sujets
     pays_places = db.session.query(WikidataPlaces.country).join(
         DefLiaisonSujets, DefLiaisonSujets.qid_places == WikidataPlaces.qid
     ).filter(WikidataPlaces.country.isnot(None)).distinct()
@@ -68,58 +67,23 @@ def p_carto():
         DefLiaisonSujets, DefLiaisonSujets.qid_archaeological_sites == WikidataArchaeologicalSites.qid
     ).filter(WikidataArchaeologicalSites.country.isnot(None)).distinct()
 
-    # Union des trois sets → noms français uniques
+    # Union des trois sets
     pays_fr = set(
         [r[0] for r in pays_places] +
         [r[0] for r in pays_orgs] +
         [r[0] for r in pays_archeo]
     )
-
     # Traduit en noms anglais (clés du GeoJSON) via COUNTRY_MAP
     pays_en_avec_publications = list(filter(None, [
         COUNTRY_MAP.get(nom_fr) for nom_fr in pays_fr
     ]))
-
     with open(os.path.join(os.path.dirname(__file__), '..', 'static', 'pays_traduits.json'),
               encoding='utf-8') as f:
         country_map = json.load(f)
 
     return render_template(
-        "pages/carto.html",
-        COUNTRY_MAP=country_map,
-        PAYS_AVEC_PUBLICATIONS=pays_en_avec_publications
+        "pages/carto.html", COUNTRY_MAP=country_map, PAYS_AVEC_PUBLICATIONS=pays_en_avec_publications
     )
-
-# Afiche les informations sur les pays 
-@app.route('/c_pays')
-def pays_au_click():
-    # Récupère le nom du pays en anglais depuis les paramètres de la requête
-    country_en = request.args.get('country', '')
-
-    # Si le pays n'est pas fourni, retourne une liste vide
-    if not country_en:
-        return jsonify([])
-
-    # Récupère les noms originaux en base de données correspondant au nom anglais
-    # (ex: "United Kingdom" → ["Royaume-Uni", "UK"])
-    db_names = COUNTRY_MAP_INVERSE.get(country_en, [country_en])
-
-    # Récupère les lieux, organisations et sites archéologiques associés
-    places = WikidataPlaces.query.filter(WikidataPlaces.country.in_(db_names)).all()
-    orgs = WikidataOrganizations.query.filter(WikidataOrganizations.country.in_(db_names)).all()
-    archeos = WikidataArchaeologicalSites.query.filter(WikidataArchaeologicalSites.country.in_(db_names)).all()
-
-    # Formate les résultats
-    result = [
-        {'qid': p.qid, 'labelFr': p.labelFr, 'type': 'place'} for p in places
-    ] + [
-        {'qid': o.qid, 'labelFr': o.labelFr, 'type': 'organization'} for o in orgs
-    ] + [
-        {'qid': a.qid, 'labelFr': a.labelFr, 'type': 'archaeological_site'} for a in archeos
-    ]
-
-    # Retourne les résultats au format JSON
-    return jsonify(result)
 
 # Compte le nombre de publication associées à un pays
 @app.route('/c_publication_count')
@@ -155,7 +119,7 @@ def get_publications_count():
 @app.route('/resultat_pays/<country_name>')
 def afficherpublications(country_name):
     # country_name est le nom anglais (GeoJSON) → convertir en noms français
-    db_names = COUNTRY_MAP_INVERSE.get(country_name, [country_name])
+    db_names = COUNTRY_MAP_INVERSE.get(COUNTRY_MAP.get(country_name, country_name), [country_name])
 
     publications = db.session.query(
         DefAuteur.auteur_nom,
