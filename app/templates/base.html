@@ -7,13 +7,17 @@
     <body>
         {% include "partials/header.html" %}
        
+    
         <div class="display">
             <main class="display-main">
+                <!-- {% include "partials/display-text.html" %} -->
                 {% block content %}{% endblock %}
             </main>
+            {% block sidebar %}
             <aside class="sidebar-recherche">
                 {% include "partials/formulaires/form_avancee.html" %}
             </aside>
+            {% endblock %}
         </div>
 
         {% include "partials/footer.html" %}
