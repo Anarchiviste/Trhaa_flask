@@ -1,10 +1,10 @@
 from ..app import app, db
 from flask import render_template, redirect, url_for, flash, request
-from ..models.models import User, DefTableInstitution, DefAuteur, DefPublication, DefLiaisonSujets, WikidataArchaeologicalSites, WikidataPersons, WikidataPlaces, WikidataConcepts, WikidataOrganizations, WikidataArtMovements, WikidataTimePeriods
+from ..models.models import User, DefTableInstitution, DefAuteur, DefPublication, DefLiaisonSujets, WikidataArchaeologicalSites, WikidataPersons, WikidataPlaces, WikidataConcepts, WikidataOrganizations, WikidataArtMovements, WikidataTimePeriods, Historique
 from sqlalchemy import text, inspect
 from ..models.formulaires import AjoutUtilisateur, LoginUtilisateur
 from ..utils.recherche_avancee import recherche_avancee, get_options_filtres
-from flask_login import current_user, login_required, logout_user
+from flask_login import current_user, login_required, logout_user, login_user
 from datetime import datetime
 
 
@@ -123,7 +123,34 @@ def signin():
 
 
 @app.route('/e_recherche_avancee', methods=['GET', 'POST'])
+@login_required
 def e_recherche_avancee():
+    """
+    Route Flask gérant la recherche avancée de ressources documentaires et la
+    persistance de ses résultats en historique utilisateur.
+    Comportements :
+        - Charge les options de filtres disponibles à chaque appel (GET et POST)
+        - En GET  : affiche le formulaire de recherche vide
+        - En POST : récupère les 7 filtres soumis (auteur, institution, typologie,
+                    langue, date_min, date_max, sujet_rameau) et exécute la recherche
+        - Itère sur chaque résultat retourné et crée une entrée Historique en base
+        - Compose le nom complet de l'auteur depuis auteur_nom + auteur_prenom
+        - Effectue un commit unique après la boucle
+        - Logue le premier résultat brut via app.logger.info pour le débogage
+    Retourne :
+        - render_template('pages/recherche_avancee.html') avec :
+            - options  : dict des filtres disponibles pour alimenter le formulaire
+            - resultats: liste de dicts des documents trouvés (None si GET ou aucun résultat)
+    Dépendances :
+        - Flask        : request, render_template, current_app (app.logger)
+        - flask_login  : login_required, current_user
+        - helpers      : get_options_filtres(), recherche_avancee()
+        - models       : Historique (SQLAlchemy ORM), db.session
+        - stdlib       : datetime
+    """
+    options = get_options_filtres()
+    resultats = None
+
     if request.method == 'POST':
         resultats = recherche_avancee(
             auteur       = request.form.get('auteur'),
@@ -134,17 +161,40 @@ def e_recherche_avancee():
             date_max     = request.form.get('date_max'),
             sujet_rameau = request.form.get('sujet_rameau'),
         )
-        return render_template('pages/recherche_avancee.html', resultats=resultats)
 
-    return render_template('pages/recherche_avancee.html')
+        if resultats:
+            app.logger.info(f'{resultats[0]}')
+            for res in resultats[:50]:  # ← limite à 50 entrées max en historique
+                historique_entry = Historique(
+                id_user             = str(current_user.id),
+                nom_user            = current_user.name,
+                result_author       = f"{res.get('auteur_nom', '')} {res.get('auteur_prenom', '')}".strip()[:100] or '',
+                result_title        = (res.get('titre') or '')[:200],        # ← tronqué à 200
+                result_institution  = (res.get('institution') or '')[:100],  # ← tronqué à 100
+                result_date_min     = res.get('date_publication') or '',
+                result_typologie    = (res.get('typologie') or '')[:100],
+                result_langue       = (res.get('langue') or '')[:100],
+                result_sujet_rameau = (res.get('sujet_rameau') or '')[:100],
+                timestamp           = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
+                )
+                db.session.add(historique_entry)
+                db.session.commit()
 
-
+    return render_template(
+        'pages/recherche_avancee.html',
+        options=options,
+        resultats=resultats
+    )
+    
 @app.context_processor
 def inject_recherche():
-    return dict(
-        options=get_options_filtres(),
-        resultats=None
-    )
+    ROUTES_AVEC_OPTIONS = ('home', 'e_recherche_avancee')
+    if request.endpoint in ROUTES_AVEC_OPTIONS:
+        try:
+            return dict(options=get_options_filtres(), resultats=None)
+        except Exception:
+            return dict(options={}, resultats=None)
+    return {}
 
 @app.route('/historique', methods=['GET'])
 @login_required
@@ -158,7 +208,6 @@ def historique():
         - Sérialise l'ensemble des entrées en liste de dicts via to_dict()
         - Passe les données sous deux formes au template : objets ORM et JSON
 
-    Retourne :
         - render_template('pages/historique.html') avec :
             - historique      : liste d'objets Historique (accès aux attributs ORM dans le template)
             - historique_json : liste de dicts sérialisés (prête pour un usage JS/JSON dans le template)
