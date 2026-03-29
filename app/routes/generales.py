@@ -4,12 +4,33 @@ from ..models.models import User, DefTableInstitution, DefAuteur, DefPublication
 from sqlalchemy import text, inspect
 from ..models.formulaires import AjoutUtilisateur, LoginUtilisateur
 from ..utils.recherche_avancee import recherche_avancee, get_options_filtres
+from ..utils.recherche_simple import barre_recherche_simple
 
 
 @app.route('/')
 @app.route('/home', methods=['GET', 'POST'])
 def home():
-    return render_template('pages/home.html')
+    q = (request.form.get('q') or request.args.get('q', '')).strip()
+    resultats = None
+
+    if request.method == 'POST' or q:
+        ids_a_inclure = None
+        if q:
+            resultats_simple = barre_recherche_simple(q)
+            ids_a_inclure = [r['id'] for r in resultats_simple]
+
+        resultats = recherche_avancee(
+            auteur        = request.form.get('auteur'),
+            institution   = request.form.get('institution'),
+            typologie     = request.form.get('typologie'),
+            langue        = request.form.get('langue'),
+            date_min      = request.form.get('date_min'),
+            date_max      = request.form.get('date_max'),
+            sujet_rameau  = request.form.get('sujet_rameau'),
+            ids_a_inclure = ids_a_inclure,
+        )
+
+    return render_template('pages/home.html', resultats=resultats, q=q)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -112,33 +133,6 @@ def signin():
         return render_template('pages/sign-in.html', form=form)
 
 login.login_view = 'connexion'
-
-'''
-@app.route('/e_recherche_avancee', methods=['GET', 'POST'])
-def e_recherche_avancee():
-    resultats = None
-    if request.method == "POST":
-        # ta logique de filtrage existante
-        resultats = Publication.query.filter(...).all()
-    return render_template("pages/home.html", resultats=resultats)'''
-
-'''Rajout d'un processeur pour transformer la recherche avancée en encart statique sur chaque page'''
-
-@app.route('/e_recherche_avancee', methods=['GET', 'POST'])
-def e_recherche_avancee():
-    if request.method == 'POST':
-        resultats = recherche_avancee(
-            auteur       = request.form.get('auteur'),
-            institution  = request.form.get('institution'),
-            typologie    = request.form.get('typologie'),
-            langue       = request.form.get('langue'),
-            date_min     = request.form.get('date_min'),
-            date_max     = request.form.get('date_max'),
-            sujet_rameau = request.form.get('sujet_rameau'),
-        )
-        return render_template('pages/recherche_avancee.html', resultats=resultats)
-
-    return render_template('pages/recherche_avancee.html')
 
 
 @app.context_processor

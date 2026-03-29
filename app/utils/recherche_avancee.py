@@ -78,6 +78,7 @@ def recherche_avancee(
     date_min=None,
     date_max=None,
     sujet_rameau=None,
+    ids_a_inclure=None,
 ):
     """
     Recherche avancée dans la base TRHAA.
@@ -165,6 +166,10 @@ def recherche_avancee(
             .subquery()
         )
         query = query.filter(DefPublication.id.in_(sous_requete))
+
+    # Filtre sur les IDs issus de la recherche simple (FTS)
+    if ids_a_inclure is not None:
+        query = query.filter(DefPublication.id.in_(ids_a_inclure))
 
     publications = query.distinct().all()
 
