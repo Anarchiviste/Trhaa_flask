@@ -1,27 +1,23 @@
 <!DOCTYPE html>
 <html lang="fr">
-    <head>
+<head>
         {% include "partials/head.html"%}
         {% include "partials/css.html" %}
-    </head>
-    <body>
+</head>
+<body>
         {% include "partials/header.html" %}
-        {% block search_bar %}
-        {% include "partials/barre_recherche_simple.html" %}
-        {% endblock %}
-
-        <div class="display">
-            <main class="display-main">
-                <!-- {% include "partials/display-text.html" %} -->
+<div class="display">
+<main class="display-main">
                 {% block content %}{% endblock %}
-            </main>
+</main>
             {% block sidebar %}
-            <aside class="sidebar-recherche">
+            {% if options is defined %}
+<aside class="sidebar-recherche">
                 {% include "partials/formulaires/form_avancee.html" %}
-            </aside>
+</aside>
+            {% endif %}
             {% endblock %}
-        </div>
-
+</div>
         {% include "partials/footer.html" %}
-    </body>
+</body>
 </html>

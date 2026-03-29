@@ -12,6 +12,14 @@
             </a>
         </div>
         <div class="header-auth">
+            <div class="header-historique">
+                <a href="{{url_for('historique')}}">
+                    <div class="header-historique-logo">
+                        <img src="{{url_for('static', filename='img/file.png')}}" alt="history icon"/>
+                    </div>
+                    <p>Historique</p>
+                </a>
+            </div>
             <div class="header-login">
                 <a href="{{url_for('login')}}">
                     <div class="header-login-logo">
