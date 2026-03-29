@@ -6,12 +6,33 @@ from ..models.formulaires import AjoutUtilisateur, LoginUtilisateur
 from ..utils.recherche_avancee import recherche_avancee, get_options_filtres
 from flask_login import current_user, login_required, logout_user, login_user
 from datetime import datetime
+from ..utils.recherche_simple import barre_recherche_simple
 
 
 @app.route('/')
 @app.route('/home', methods=['GET', 'POST'])
 def home():
-    return render_template('pages/home.html')
+    q = (request.form.get('q') or request.args.get('q', '')).strip()
+    resultats = None
+
+    if request.method == 'POST' or q:
+        ids_a_inclure = None
+        if q:
+            resultats_simple = barre_recherche_simple(q)
+            ids_a_inclure = [r['id'] for r in resultats_simple]
+
+        resultats = recherche_avancee(
+            auteur        = request.form.get('auteur'),
+            institution   = request.form.get('institution'),
+            typologie     = request.form.get('typologie'),
+            langue        = request.form.get('langue'),
+            date_min      = request.form.get('date_min'),
+            date_max      = request.form.get('date_max'),
+            sujet_rameau  = request.form.get('sujet_rameau'),
+            ids_a_inclure = ids_a_inclure,
+        )
+
+    return render_template('pages/home.html', resultats=resultats, q=q)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

@@ -634,6 +634,60 @@ footer::before {
     background-color: var(--stone-light);
 }
 
+/* BARRE RECHERCHE SIMPLE */
+
+.barre-recherche-simple {
+    padding: 0.5rem 1rem;
+    background-color: var(--paper-dark);
+    background-image: var(--grain);
+    border-bottom: 1px solid var(--paper-mid);
+}
+
+.barre-recherche-simple form {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.barre-recherche-simple input[type="text"] {
+    flex: 1;
+    background: var(--paper);
+    border: 1px solid var(--paper-mid);
+    border-radius: var(--radius);
+    padding: 0.45rem 0.8rem;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    color: var(--ink);
+    outline: none;
+    transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.barre-recherche-simple input[type="text"]::placeholder {
+    color: var(--stone-light);
+    font-style: italic;
+}
+
+.barre-recherche-simple input[type="text"]:focus {
+    border-color: var(--lapis);
+    box-shadow: 0 0 0 3px rgba(46, 79, 122, 0.12);
+}
+
+.barre-recherche-simple button {
+    background: var(--lapis);
+    color: var(--paper);
+    border: 1px solid var(--lapis-dim);
+    border-radius: var(--radius);
+    padding: 0.45rem 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: background var(--transition);
+}
+
+.barre-recherche-simple button:hover {
+    background: var(--lapis-dim);
+}
+
 /* Transformation du formulaire recherche_avancée en side bar*/
 .display {
     align-items: flex-start; 
