@@ -580,3 +580,40 @@ footer::before {
 .formulaire_recherche_avancee table tr:hover{
     background-color: var(--stone-light);
 }
+
+/* Transformation du formulaire recherche_avancée en side bar*/
+.display {
+    align-items: flex-start; 
+}
+
+.display-main {
+    flex: 1 1 0;             
+    min-width: 0;            
+}
+
+.sidebar-recherche {
+    flex: 0 0 280px;        
+    position: sticky;
+    top: 1rem;              
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;        
+}
+
+.sidebar-recherche .formulaire_recherche_avancee {
+    margin: 0;               
+    max-width: 100%;         
+}
+
+
+@media (max-width: 768px) {
+    .display {
+        flex-direction: column;
+    }
+
+    .sidebar-recherche {
+        flex: 0 0 auto;
+        position: static;    
+        width: 100%;
+        max-height: none;
+    }
+}

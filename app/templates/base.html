@@ -6,11 +6,20 @@
     </head>
     <body>
         {% include "partials/header.html" %}
-        <main>
-            {% block body %}
-
+       
+    
+        <div class="display">
+            <main class="display-main">
+                <!-- {% include "partials/display-text.html" %} -->
+                {% block content %}{% endblock %}
+            </main>
+            {% block sidebar %}
+            <aside class="sidebar-recherche">
+                {% include "partials/formulaires/form_avancee.html" %}
+            </aside>
             {% endblock %}
-        </main>
+        </div>
+
         {% include "partials/footer.html" %}
     </body>
 </html>

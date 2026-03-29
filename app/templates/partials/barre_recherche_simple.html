@@ -1,0 +1,6 @@
+<div class="barre-recherche-simple">
+    <form method="GET" action="{{ url_for('home') }}">
+        <input type="text" name="q" placeholder="Rechercher un titre, un auteur…" value="{{ q or '' }}">
+        <button type="submit">Rechercher</button>
+    </form>
+</div>
