@@ -1,0 +1,61 @@
+{% if historique %}
+<div class="historique-container">
+    <h1> Votre Historique de recherche </h1>
+
+    <table class="historique-table">
+        <thead>
+            <tr>
+                <th>Auteur</th>
+                <th>Titre</th>
+                <th>Institution</th>
+                <th>Langue</th>
+                <th>Sujet Rameau</th>
+                <th>Date Publication</th>
+                <th>Typologie</th>
+                <th>Date de recherche</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entree in historique %}
+            <tr>
+                <td>{{ entree.result_author }}</td>
+                <td>{{ entree.result_title }}</td>
+                <td>{{ entree.result_institution }}</td>
+                <td>{{ entree.result_langue }}</td>
+                <td>{{ entree.result_sujet_rameau }}</td>
+                <td>{{ entree.result_date_min }}</td>
+                <td>{{ entree.result_typologie }}</td>
+                <td>{{ entree.timestamp }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <button onclick="telechargerJSON()">⬇ Télécharger en JSON</button>
+</div>
+
+<script id="historique-data" type="application/json">
+  {{ historique_json | tojson }}
+</script>
+
+<script>
+  const donneesHistorique = JSON.parse(
+    document.getElementById('historique-data').textContent
+  );
+
+  function telechargerJSON() {
+    const blob = new Blob([JSON.stringify(donneesHistorique, null, 2)], {
+      type: 'application/json'
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'historique_recherches.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+</script>
+
+{% else %}
+    <p class="historique-vide">Aucune recherche enregistrée.</p>
+{% endif %}

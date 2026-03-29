@@ -617,3 +617,86 @@ footer::before {
         max-height: none;
     }
 }
+
+/* historique */
+
+/* Styles pour le tableau d'historique */
+.historique-container table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    margin-top: 0.5rem;
+}
+
+.historique-container table th {
+    border: 1px solid var(--ink);
+    background-color: var(--ink);
+    color: var(--paper);
+    padding: 0.4rem 0.6rem;
+    text-align: left;
+    font-weight: 400;
+    text-transform: lowercase;
+}
+
+.historique-container table td {
+    border: 1px solid var(--ink);
+    padding: 0.4rem 0.6rem;
+    text-align: left;
+    font-weight: 400;
+    text-transform: lowercase;
+}
+
+.historique-container table tr:hover {
+    background-color: var(--paper-mid);
+}
+
+.historique-container h1 {
+    font-family: var(--font-mono);
+    font-size: clamp(1rem);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1;
+    color: var(--lapis-dim);    
+}
+
+.historique-container button {
+    /* Dimensions */
+    padding: 10px 20px;
+    min-width: 60px;
+
+    /* Couleurs */
+    background-color: var(--ink);
+    color: var(--paper);
+    border: none;
+
+    /* Typographie */
+    font-size: 0.9rem;
+    font-weight: 600;
+
+    /* Forme */
+    border-radius: 6px;
+    cursor: pointer;
+
+    /* Transitions */
+    transition: background var(--transition), 
+                opacity var(--transition),
+                transform var(--transition);
+
+    /* Placement */
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    margin-top: 16px;
+}
+
+.historique-container button:active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.historique-container button:hover{
+    background-color: var(--claret);
+}
