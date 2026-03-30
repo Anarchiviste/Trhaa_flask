@@ -43,18 +43,26 @@ def password_initialisation():
     '''
     try:
         with app.app_context():
-            with db.engine.connect() as conn:
-                # Vérifier si la colonne existe
+            with db.engine.connect() as init:
                 inspector = inspect(db.engine)
-                colonnes = [col['name'] for col in inspector.get_columns('users')]
-        
-                if 'password' in colonnes:
-                    app.logger.info('La colonne existe déjà')
+                tables = inspector.get_table_names()        
+                if 'users' in tables:                  
+                    app.logger.info('La table users existe déjà')
                 else:
-                    conn.execute(text('ALTER TABLE users ADD COLUMN password VARCHAR(255)'))
-                    conn.commit()
-                    app.logger.info('La colonne a été ajoutée')
-
+                    try:
+                        init.execute(text('''
+                            DROP TABLE if exists users;
+                            CREATE TABLE users (
+                                id      SERIAL PRIMARY KEY,
+                                name VARCHAR(100),
+                                email    VARCHAR(100),   
+                                password VARCHAR(255)
+                            );
+                        '''))                               
+                        init.commit()
+                        app.logger.info('La table users a été créée')
+                    except Exception as e:
+                        app.logger.error(f'Problème création : {str(e)}')
     except Exception as e:
         app.logger.error(f'Problème : {str(e)}')
 
@@ -86,7 +94,7 @@ def historique_initialisation():
                 inspector = inspect(db.engine)
                 tables = inspector.get_table_names()        
                 if 'historique' in tables:                  
-                    app.logger.info('La table existe déjà')
+                    app.logger.info('La table historique existe déjà')
                 else:
                     try:
                         init.execute(text('''
@@ -106,7 +114,7 @@ def historique_initialisation():
                             );
                         '''))                               
                         init.commit()
-                        app.logger.info('La table a été créée')
+                        app.logger.info('La table historique a été créée')
                     except Exception as e:
                         app.logger.error(f'Problème création : {str(e)}')
     except Exception as e:
