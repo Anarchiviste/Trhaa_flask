@@ -17,6 +17,12 @@ SQLALCHEMY_DATABASE_URI=postgresql://UTILISATEUR:MOT_DE_PASSE@HOTE:PORT/NOM_BASE
 WTF_CSRF_ENABLE=True
 SECRET_KEY=your_secret_key
 ```
+L'utilisateur doit ensuite installer le fichier requirement.txt dans un environnement python virtuel
+```
+python3 -m venv flask
+source flask/bin/activate
+pip install -r requirement.txt
+```
 
 ## Initialisation de l'application (app/app)
 
