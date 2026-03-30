@@ -10,8 +10,11 @@ from ..models.models import (
     DefPublication,
     DefAuteur,
     DefTableInstitution,
+    Historique, 
 )
-
+from datetime import datetime
+from flask_login import current_user
+from ..app import db                            # ← ajout
 
 def barre_recherche_simple(recherche):
     """
@@ -69,6 +72,24 @@ def barre_recherche_simple(recherche):
     )
 
     publications = query.all()
+    
+    resultats    = [_serialise(pub) for pub in publications]
+    
+    if resultats and current_user.is_authenticated:
+        for res in resultats[:50]:
+            db.session.add(Historique(
+                id_user             = str(current_user.id),
+                nom_user            = current_user.name,
+                result_author       = f"{res.get('auteur_nom', '')} {res.get('auteur_prenom', '')}".strip()[:100] or '',
+                result_title        = (res.get('titre') or '')[:200],
+                result_institution  = (res.get('institution') or '')[:100],
+                result_date_min     = res.get('date_publication') or '',
+                result_typologie    = (res.get('typologie') or '')[:100],
+                result_langue       = (res.get('langue') or '')[:100],
+                result_sujet_rameau = '',
+                timestamp           = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
+            ))
+        db.session.commit()    
 
     return [_serialise(pub) for pub in publications]
 

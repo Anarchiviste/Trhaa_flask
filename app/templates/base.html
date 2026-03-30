@@ -6,6 +6,9 @@
 </head>
 <body>
         {% include "partials/header.html" %}
+        {% block search_bar %}
+        {% include "partials/barre_recherche_simple.html" %}
+        {% endblock %}
 <div class="display">
 <main class="display-main">
                 {% block content %}{% endblock %}
