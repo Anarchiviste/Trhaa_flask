@@ -249,3 +249,30 @@ Pour accéder à l'historique, il suffit d'utiliser la route _historique_. La ro
         - flask_login : login_required, current_user
         - models      : Historique (SQLAlchemy ORM)
 
+## Télécharger ses résultats depuis son historique 
+
+La classe Historique intègre une fonction _to_dict_ qui est donné à la route historique pour créer un paramètre historique_json qui est ensuite traité par un scripte javascript dans partials/part_ui.html et qui permet de générer et de télécharger un fichier json de l'historique de l'utililisateur.
+
+```
+<script id="historique-data" type="application/json">
+  {{ historique_json | tojson }}
+</script>
+
+<script>
+  const donneesHistorique = JSON.parse(
+    document.getElementById('historique-data').textContent
+  );
+
+  function telechargerJSON() {
+    const blob = new Blob([JSON.stringify(donneesHistorique, null, 2)], {
+      type: 'application/json'
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'historique_recherches.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+</script>
+```
