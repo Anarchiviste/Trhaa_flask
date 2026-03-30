@@ -25,7 +25,7 @@
 
     //Initialisation de Leaflet
     const map = L.map('map', {
-        center: [20, 10],
+        center: [45, 15],
         zoom: 3.5,
         minZoom: 2,
         maxZoom: 8,
@@ -159,7 +159,7 @@
             click: function() {
                 if (!inDB) return; // Pas de clic si pays hors base
                 // Navigue vers la page résultats avec le nom anglais
-                window.location.href = `/resultat_pays/${encodeURIComponent(nameFr)}`;
+                window.location.href = `/e_recherche_avancee?pays=${encodeURIComponent(nameFr)}`;
             },
         });
     }

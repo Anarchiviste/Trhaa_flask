@@ -5,7 +5,11 @@
 {% block content %}
 <div class="formulaire_recherche_avancee">
     <h1>Recherche avancée</h1>
+    {% if pays_selectionne %}
+    <p>Résultats pour le pays : <strong>{{ pays_selectionne }}</strong></p>
+    {% endif %}
     <form method="POST" action="{{ url_for('e_recherche_avancee') }}">
+        <input type="hidden" name="pays" value="{{ pays_selectionne or '' }}" />
         <label>Auteur</label>
         <input type="text" name="auteur" />
 

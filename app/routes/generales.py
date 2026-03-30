@@ -173,6 +173,7 @@ def e_recherche_avancee():
     """
     options = get_options_filtres()
     resultats = None
+    pays = request.args.get('pays', '')
 
     if request.method == 'POST':
         resultats = recherche_avancee(
@@ -202,11 +203,15 @@ def e_recherche_avancee():
                 )
                 db.session.add(historique_entry)
                 db.session.commit()
+    elif pays:
+        # Arrivée depuis la carte : lancer la recherche directement
+        resultats = recherche_avancee(pays=pays)
 
     return render_template(
         'pages/recherche_avancee.html',
         options=options,
-        resultats=resultats
+        resultats=resultats,
+        pays_selectionne=pays, 
     )
     
 @app.context_processor

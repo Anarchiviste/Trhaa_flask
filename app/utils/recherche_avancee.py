@@ -14,6 +14,9 @@ from ..models.models import (
     DefAuteur,
     DefTableInstitution,
     DefLiaisonSujets,
+    WikidataPlaces,
+    WikidataOrganizations,
+    WikidataArchaeologicalSites,
 )
 
 """
@@ -79,6 +82,7 @@ def recherche_avancee(
     date_max=None,
     sujet_rameau=None,
     ids_a_inclure=None,
+    pays=None, 
 ):
     """
     Recherche avancée dans la base TRHAA.
@@ -166,6 +170,28 @@ def recherche_avancee(
             .subquery()
         )
         query = query.filter(DefPublication.id.in_(sous_requete))
+
+    # Filtre pays : sous-requête sur les trois tables géographiques Wikidata
+    if pays and pays.strip():
+        sous_requete_pays = (
+            DefLiaisonSujets.query
+            .outerjoin(WikidataPlaces,
+                       DefLiaisonSujets.qid_places == WikidataPlaces.qid)
+            .outerjoin(WikidataOrganizations,
+                       DefLiaisonSujets.qid_organizations == WikidataOrganizations.qid)
+            .outerjoin(WikidataArchaeologicalSites,
+                       DefLiaisonSujets.qid_archaeological_sites == WikidataArchaeologicalSites.qid)
+            .filter(
+                or_(
+                    WikidataPlaces.country == pays.strip(),
+                    WikidataOrganizations.country == pays.strip(),
+                    WikidataArchaeologicalSites.country == pays.strip(),
+                )
+            )
+            .with_entities(DefLiaisonSujets.id_publication)
+            .subquery()
+        )
+        query = query.filter(DefPublication.id.in_(sous_requete_pays))
 
     # Filtre sur les IDs issus de la recherche simple (FTS)
     if ids_a_inclure is not None:
