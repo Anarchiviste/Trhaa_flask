@@ -1,8 +1,10 @@
 # Travaux de recherche en histoire de l'art et archéologie
 
+## Initialisation de l'application 
 Au lancement de l'application, l'application execute automatiquement deux fonctions : 
 
-- password_initialisation():
+==password_initialisation()==
+
     Vérifie si la colonne 'password' existe dans la table 'users' et l'ajoute si elle est absente.
 
     Comportement :
@@ -24,7 +26,8 @@ Au lancement de l'application, l'application execute automatiquement deux foncti
     Notes : 
         - L'ajout de la colonne 'password' ne peut se faire que par une requête SQL "en dure".
 
-- historique_initialisation():
+==historique_initialisation()==
+
     Vérifie si la table 'historique' existe dans la base de données et la crée si elle est absente.
 
     Comportement :
