@@ -1,143 +1,9 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cartographie des publications</title>
+{% extends "base.html"%}
 
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<!--CSS propre à la carte-->
+{% block body_class %}page-carto{% endblock %}
 
-    <style>
-        /* Variables de couleurs et d'ombre*/
-        :root {
-            --bg:           #0f1117;
-            --surface:      #171c27;
-            --surface-2:    #1e2535;
-            --border:       rgba(255,255,255,0.07);
-            --text:         #d6cfc3;
-            --text-dim:     #7a8394;
-            --accent:       #4e8fb5;
-            --accent-light: #7fb8d8;
-            --gold:         #c9a84c;
-            --country-in:   #4e8fb5;
-            --country-out:  #2c3340;
-            --country-hover:#c9a84c;
-            --shadow:       0 8px 32px rgba(0,0,0,0.5);
-        }
-
-        /* ─── Reset & base à supprimer ──────────────────────────────────────────── */
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        html, body {
-            height: 100%;
-            background: var(--bg);
-            color: var(--text);
-            font-family: 'Source Sans 3', sans-serif;
-            font-weight: 300;
-            overflow: hidden;
-        }
-
-        /* ─── Map container ─────────────────────────────────────────── */
-        #map {
-            width: 100%;
-            height: 100%;
-            background: var(--bg);
-            animation: fadeIn 0.8s 0.3s ease both;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to   { opacity: 1; }
-        }
-
-        /* Particules propres à Leaflet, les noms sont prédéfinis */
-
-        /*Changement de la couleur du bouton de zoom*/
-        .leaflet-control-zoom a {
-            background: var(--surface-2) !important; 
-            color: var(--text);
-            border: none;
-            border-bottom: 1px solid var(--border);
-        }
-
-        /*Changement du hover du bouton de zoom*/
-        .leaflet-control-zoom a:hover {
-            background: var(--accent)!important;
-            color: #fff!important;
-        }
-
-        /*Changement de la couleur des sources (en bas à droite)*/
-        .leaflet-control-attribution {
-            background: rgba(15,17,23,0.75)!important;
-        }
-
-        .leaflet-control-attribution a { color: var(--accent-light) !important; }
-
-        /* ─── Custom tooltip ────────────────────────────────────────── */
-        /*Bulle info*/
-        .thraa-infobulle {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 0.55rem 0.85rem;
-            box-shadow: var(--shadow);
-            pointer-events: none;
-            min-width: 160px;
-        }
-
-        /*Nom du pays*/
-        .thraa-infobulle .tt-country {
-            font-size: 1rem;
-            font-weight: 600;
-            color: #fff;
-            margin-bottom: 0.3rem;
-        }
-
-        /*Texte "références associées"*/
-        .thraa-infobulle .tt-row {
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            font-size: 0.75rem;
-            color: var(--text-dim);
-        }
-
-        /*Nombre de publications*/
-        .thraa-infobulle .tt-count {
-            font-size: 0.8rem;
-            color: var(--gold);
-            font-weight: 600;
-        }
-
-        /*Badge pour indiquant si le pays est dans la base*/
-        .thraa-infobulle .tt-badge {
-            display: inline-block;
-            padding: 0.1rem 0.45rem;
-            border-radius: 3px;
-            font-size: 0.65rem;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            margin-top: 0.35rem;
-        }
-
-        /*Badge quand le pays est dans la base*/
-        .tt-badge.in-base {
-            background: rgba(78,143,181,0.18);
-            color: var(--accent-light);
-            border: 1px solid rgba(78,143,181,0.3);
-        }
-
-        /*Badge quand le pays n'est pas dans la base*/
-        .tt-badge.not-in-base {
-            background: rgba(255,255,255,0.04);
-            color: var(--text-dim);
-            border: 1px solid var(--border);
-        }
-    </style>
-</head>
-<body>
-
+{% block content %}
     <!-- Emplacement de la carte -->
     <div id="map"></div>
 
@@ -164,6 +30,9 @@
         minZoom: 2,
         maxZoom: 8,
     });
+
+    // Force Leaflet à recalculer la taille réelle du conteneur
+    setTimeout(() => map.invalidateSize(), 100);
 
     // Fond de carte avec sources
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
@@ -210,9 +79,9 @@
         const inDB = countriesInDB.has(nameEn);
         return {
             //Si le pays est dans inDB, premier option, sinon deuxième option
-            fillColor:   inDB ? '#4e8fb5' : '#2c3340',
+            fillColor:   inDB ? '#1e3454' : '#2c3340', //Couleur du pays
             fillOpacity: inDB ? 0.65 : 0.35,
-            color:       inDB ? '#7fb8d8' : 'rgba(255,255,255,0.08)',
+            color:       inDB ? '#2e4f7a' : 'rgba(255,255,255,0.08)', //Contour du pays
             weight:      inDB ? 0.8 : 0.5,
         };
     }
@@ -220,9 +89,9 @@
     //Style au survol de la souris. 
     function styleHover(feature) {
         return {
-            fillColor:   '#c9a84c',
+            fillColor:   '#d9cfb8',
             fillOpacity: 0.75,
-            color:       '#e8c97a',
+            color:       '#e8e0cc',
             weight:      1.2,
         };
     }
@@ -238,8 +107,8 @@
     //Construit l'infobulle en fonction des données. 
     function buildTooltipHTML(nameFr, nameEn, count, inDB) {
         const badge = inDB
-            ? `<span class="tt-badge">Référencé dans THRAA</span>`
-            : `<span class="tt-badge">Non référencé</span>`;
+            ? `<span class="tt-badge in-base">Référencé dans THRAA</span>`
+            : `<span class="tt-badge not-in-base">Non référencé</span>`;
 
         const pubLine = inDB
             ? `<div class="tt-row">Publications associées : <span class="tt-count">${count}</span></div>`
@@ -314,5 +183,4 @@
             if (sub) sub.textContent = 'Erreur de chargement — vérifiez la connexion.';
         });
     </script>
-</body>
-</html>
+{% endblock %}

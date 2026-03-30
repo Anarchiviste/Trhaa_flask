@@ -122,7 +122,7 @@ def build_country_map(app, db):
             time.sleep(0.5)  # Pour éviter de casser l'API. Obligatoire pour utiliser l'API de Wikidata. 
 
         # Sauvegarde dans un fichier JSON. Ainsi il le résultat est en cache et ça évite de recharger ce résultat à chaque fois (et croyez moi ça prend du temps.)
-        output_path=os.path.join(os.path.dirname(__file__), "..", "static", "pays_traduits.json") # Le fichier est sauvegardé dans le même dossier que le script. 
+        output_path=os.path.join(os.path.dirname(__file__), "..", "statics", "pays_traduits.json") # Le fichier est sauvegardé dans le même dossier que le script. 
         with open(output_path, "w", encoding="utf-8") as f:
             json.dump(pays_traduits, f, ensure_ascii=False, indent=2) # On écrit le dictionnaire "fichiers_traduits" dans le fichier json. 
 

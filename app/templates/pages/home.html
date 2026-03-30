@@ -1,9 +1,33 @@
-<!DOCTYPE html>
-<html>
-    <head>
+{% extends "base.html"%}
 
-    </head>
-    <body>
-        <p>BONJOUR</p>
-    </body>
-</html>
+{% block content %}
+
+{% if resultats is not none %}
+    <p>{{ resultats|length }} résultat(s)</p>
+    {% if resultats %}
+    <table>
+        <tr>
+            <th>Titre</th>
+            <th>Auteur</th>
+            <th>Institution</th>
+            <th>Typologie</th>
+            <th>Langue</th>
+            <th>Date</th>
+        </tr>
+        {% for pub in resultats %}
+        <tr>
+            <td>{{ pub.titre }}</td>
+            <td>{{ pub.auteur_nom }} {{ pub.auteur_prenom }}</td>
+            <td>{{ pub.institution }}</td>
+            <td>{{ pub.typologie }}</td>
+            <td>{{ pub.langue }}</td>
+            <td>{{ pub.date_publication }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>Aucun résultat.</p>
+    {% endif %}
+{% endif %}
+
+{% endblock%}

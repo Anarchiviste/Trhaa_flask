@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block sidebar %}{% endblock %}
+
+{% block content %}
+<div class="formulaire_recherche_avancee">
+    <h1>Recherche avancée</h1>
+    <form method="POST" action="{{ url_for('e_recherche_avancee') }}">
+        <label>Auteur</label>
+        <input type="text" name="auteur" />
+
+        <label>Institution</label>
+        <select name="institution">
+            <option value="">-- Toutes --</option>
+            {% for inst in options.institutions %}
+            <option value="{{ inst }}">{{ inst }}</option>
+            {% endfor %}
+        </select>
+
+        <label>Typologie</label>
+        <select name="typologie">
+            <option value="">-- Toutes --</option>
+            {% for typo in options.typologies %}
+            <option value="{{ typo }}">{{ typo }}</option>
+            {% endfor %}
+        </select>
+
+        <label>Langue</label>
+        <select name="langue">
+            <option value="">-- Toutes --</option>
+            {% for lng in options.langues %}
+            <option value="{{ lng }}">{{ lng }}</option>
+            {% endfor %}
+        </select>
+
+        <label>Sujet</label>
+        <select name="sujet_rameau">
+            <option value="">-- Tous --</option>
+            {% for sujet in options.sujets_rameau %}
+            <option value="{{ sujet }}">{{ sujet }}</option>
+            {% endfor %}
+        </select>
+
+        <label>Date min</label>
+        <input type="number" name="date_min" placeholder="ex. 2005" />
+
+        <label>Date max</label>
+        <input type="number" name="date_max" placeholder="ex. 2015" />
+
+        <button type="submit">Rechercher</button>
+    </form>
+
+    {% if resultats is not none %}
+    <p>{{ resultats|length }} résultat(s)</p>
+    {% if resultats %}
+    <table>
+        <tr>
+            <th>Titre</th><th>Auteur</th><th>Institution</th>
+            <th>Typologie</th><th>Langue</th><th>Date</th>
+        </tr>
+        {% for pub in resultats %}
+        <tr>
+            <td>{{ pub.titre }}</td>
+            <td>{{ pub.auteur_nom }} {{ pub.auteur_prenom }}</td>
+            <td>{{ pub.institution }}</td>
+            <td>{{ pub.typologie }}</td>
+            <td>{{ pub.langue }}</td>
+            <td>{{ pub.date_publication }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>Aucun résultat.</p>
+    {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,19 +1,135 @@
-from ..app import db
+from ..app import db, login
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import UserMixin, login_user
 
 
 # ----------------------------------------------------------------
 # MODÈLE USER
 # ----------------------------------------------------------------
-class User(db.Model):
+class User(UserMixin, db.Model):
     __tablename__ = 'users'
 
     id    = db.Column(db.Integer, primary_key=True)
     name  = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(150), unique=True, nullable=False)
-
+    password = db.Column(db.String(100), nullable=False)
     def __repr__(self):
         return f'<User {self.name}>'
+    
+    @staticmethod
+    def compte_utilisateur(nom, email, password):
+        """
+        Valide et crée un nouveau compte utilisateur en base de données.
 
+        Comportements :
+        - Valide la présence et la longueur minimale (6 car.) des trois champs
+        - Vérifie l'unicité du nom et de l'email dans la table User (OR logique)
+        - Hache le mot de passe avant persistance via generate_password_hash
+        - Retourne les erreurs accumulées sans interrompre à la première rencontrée
+        - Encapsule le commit dans un try/except pour capturer les erreurs base
+
+        Retourne :
+        - (False, list[str]) : en cas d'erreur de validation ou d'exception base
+        - (True,  User)      : en cas de création réussie, avec l'objet User créé
+
+        Dépendances :
+        - models          : User, db.session, db.or_
+        - werkzeug.security : generate_password_hash
+        """        
+        erreurs=[]
+        if not nom:
+            erreurs.append('Un pseudonyme est nécessaire')
+        if not email:
+            erreurs.append('Un mail est nécessaire')
+        if not password or len(password) < 6:
+            erreurs.append('Le mot de passe est trop court')
+
+        unique = User.query.filter(
+            db.or_(User.name == nom, User.email == email)
+        ).count()
+
+        if unique > 0:
+            erreurs.append('Le nom existe déjà')
+
+        if len(erreurs) > 0:
+            return False, erreurs
+
+        utilisateur = User(
+            name=nom,      
+            email=email,
+            password=generate_password_hash(password)
+            )
+
+        try:
+            db.session.add(utilisateur)
+            db.session.commit()
+            return True, utilisateur
+
+        except Exception as erreur:
+            return False, [str(erreur)]
+
+    def get_id(self):
+        return str(self.id)
+
+    @login.user_loader
+    def get_user_by_id(id):
+        """
+        Callback Flask-Login reconstituant un utilisateur depuis son id de session.
+
+        Comportements :
+        - Enregistré auprès de l'instance LoginManager via @login.user_loader
+        - Convertit l'id (str) en entier avant la requête
+        - Retourne None implicitement si aucun utilisateur n'est trouvé (comportement Query.get)
+
+        Retourne :
+        - User | None : l'objet User correspondant, ou None si introuvable
+
+        Dépendances :
+        - flask_login : LoginManager (login)
+        - models      : User
+        """
+        return User.query.get(int(id))
+
+    
+    @staticmethod
+    def connexion(email, password):
+        try:
+            utilisateur = User.query.filter_by(email=email).first()
+            if not utilisateur:
+                return False, "Email introuvable"
+            if not check_password_hash(utilisateur.password, password):
+                return False, "Mot de passe incorrect"
+            login_user(utilisateur)                # ← établit la session Flask-Login
+            return True, utilisateur
+        except Exception as e:
+            return False, f"Erreur interne: {str(e)}"
+        
+class Historique(db.Model):
+    __tablename__ = 'historique'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id_user = db.Column(db.String(100), nullable=False)
+    nom_user = db.Column(db.String(100), nullable=False)  
+    result_author = db.Column(db.String(100), nullable=False)
+    result_title = db.Column(db.String(200), nullable=False)
+    result_institution = db.Column(db.String(100), nullable=False)
+    result_date_min = db.Column(db.String(100), nullable=False)
+    result_typologie = db.Column(db.String(100), nullable=False)
+    result_langue = db.Column(db.String(100), nullable=False)
+    result_sujet_rameau = db.Column(db.String(100), nullable=False)
+    timestamp = db.Column(db.String(100), nullable=False)
+    
+    def to_dict(self):
+        return {
+            "auteur":        self.result_author,
+            "titre":         self.result_title,
+            "institution":   self.result_institution,
+            "langue":        self.result_langue,
+            "sujet_rameau":  self.result_sujet_rameau,
+            "date_min":      self.result_date_min,
+            "typologie":      self.result_typologie,
+            "date":          self.timestamp,
+        }        
 
 # ----------------------------------------------------------------
 # def_table_institution

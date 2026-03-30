@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+        {% include "partials/head.html"%}
+        {% include "partials/css.html" %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+        {% include "partials/header.html" %}
+<div class="display">
+<main class="display-main">
+                {% block content %}{% endblock %}
+</main>
+            {% block sidebar %}
+            {% if options is defined %}
+<aside class="sidebar-recherche">
+                {% include "partials/formulaires/form_avancee.html" %}
+</aside>
+            {% endif %}
+            {% endblock %}
+</div>
+        {% include "partials/footer.html" %}
+</body>
+</html>

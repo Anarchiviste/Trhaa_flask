@@ -1,0 +1,63 @@
+<header>
+    <div class="header">
+        <div class="header-logo">
+            <a href="{{url_for('home')}}">
+                <img src="{{url_for('static', filename='img/hieroglyph.png')}}" alt="website icon">
+            </a>
+        </div>
+        <div class="header-title">
+            <a href="{{url_for('home')}}">
+                <h1>Base de donnée TRHAA</h1>
+                <p>Explorer pour mieux comprendre</p>
+            </a>
+        </div>
+        <div class="header-auth">
+            <div class="header-historique">
+                <a href="{{url_for('historique')}}">
+                    <div class="header-historique-logo">
+                        <img src="{{url_for('static', filename='img/file.png')}}" alt="history icon"/>
+                    </div>
+                    <p>Historique</p>
+                </a>
+            </div>
+            <div class="header-login">
+                <a href="{{url_for('login')}}">
+                    <div class="header-login-logo">
+                        <img src="{{url_for('static', filename='img/user.png')}}" alt="login icon">
+                    </div>
+                    <p>Login</p>
+                </a>
+            </div>
+            <div class="header-signin">
+                <a href="{{url_for('signin')}}">
+                    <div class="header-signin-logo">
+                        <img src="{{url_for('static', filename='img/login.png')}}" alt="signin icon">
+                    </div>
+                    <p>Sign in</p>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="navbar">
+        <div class="navbutton">
+            <a href="{{url_for('home')}}">
+                <p>Accueil</p>
+            </a>
+        </div>
+        <div class="navbutton">
+            <a href="{{url_for('home')}}">
+                <p>Analyses de Réseaux</p>
+            </a>
+        </div>
+        <div class="navbutton">
+            <a href="{{url_for('home')}}">
+                <p>Chronologie</p>
+            </a>
+        </div>
+        <div class="navbutton">
+            <a href="{{url_for('p_carto')}}">
+                <p>Cartographie</p>
+            </a>
+        </div>
+    </div>
+</header>

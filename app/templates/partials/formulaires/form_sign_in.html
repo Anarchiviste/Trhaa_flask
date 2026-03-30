@@ -1,0 +1,38 @@
+<div class="formulaire">
+    <h2>Créez un profil utilisateur</h2>
+
+    <!-- Affichage des messages flash (erreurs ou succès) -->
+    {% for message in get_flashed_messages() %}
+        <p class="erreur">{{ message }}</p>
+    {% endfor %}
+
+    <form method="POST">
+        {{ form.hidden_tag() }}
+
+        <div>
+            {{ form.nom_utilisateur.label }}
+            {{ form.nom_utilisateur(placeholder="Votre nom") }}
+            {% for erreur in form.nom_utilisateur.errors %}
+                <span class="erreur">{{ erreur }}</span>
+            {% endfor %}
+        </div>
+
+        <div>
+            {{ form.email_utilisateur.label }}
+            {{ form.email_utilisateur(placeholder="Votre email") }}
+            {% for erreur in form.email_utilisateur.errors %}
+                <span class="erreur">{{ erreur }}</span>
+            {% endfor %}
+        </div>
+
+        <div>
+            {{ form.password.label }}
+            {{ form.password(placeholder="Minimum 6 caractères") }}
+            {% for erreur in form.password.errors %}
+                <span class="erreur">{{ erreur }}</span>
+            {% endfor %}
+        </div>
+
+        {{ form.submit() }}
+    </form>
+</div>
