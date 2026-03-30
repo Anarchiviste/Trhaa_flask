@@ -137,7 +137,7 @@ _login_
         - Le paramètre 'next' est géré automatiquement par Flask-Login lors d'une
           tentative d'accès à une route protégée par @login_required
 
-## Faire une recherche (app/utils/)
+## Faire une recherche (app/utils)
 
 Dans notre application nous avons deux types de recherches, la recherche simple et la recherche avancée. 
 
@@ -211,3 +211,42 @@ _barre_recherche_simple_
         id, titre, auteur_nom, auteur_prenom,
         institution, typologie, langue, date_publication
     Liste vide si la recherche est vide ou ne donne aucun résultat.
+
+## Utiliser l'historique de recherche (app/generales)
+
+Toutes les fonctions de recherche rendent une variable résultats suivit d'un commit permettant d'ajouter à la table de résultat nos recherches pour l'historique. L'historique enregistre qui a rechercher ce résultat, et quand. 
+
+    if resultats and current_user.is_authenticated:
+        for res in resultats[:50]:
+            db.session.add(Historique(
+                id_user             = str(current_user.id),
+                nom_user            = current_user.name,
+                result_author       = f"{res.get('auteur_nom', '')} {res.get('auteur_prenom', '')}".strip()[:100] or '',
+                result_title        = (res.get('titre') or '')[:200],
+                result_institution  = (res.get('institution') or '')[:100],
+                result_date_min     = res.get('date_publication') or '',
+                result_typologie    = (res.get('typologie') or '')[:100],
+                result_langue       = (res.get('langue') or '')[:100],
+                result_sujet_rameau = '',
+                timestamp           = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
+            ))
+        db.session.commit()   
+
+Pour accéder à l'historique, il suffit d'utiliser la route _historique_. La route historique ne rend que les informations liés à l'utilisateur connecté. 
+
+    Route Flask affichant l'historique des recherches de l'utilisateur connecté.
+
+    Comportements :
+        - Interroge la table Historique en filtrant sur l'id de l'utilisateur courant
+        - Trie les entrées par id décroissant (résultats les plus récents en premier)
+        - Sérialise l'ensemble des entrées en liste de dicts via to_dict()
+        - Passe les données sous deux formes au template : objets ORM et JSON
+
+        - render_template('pages/historique.html') avec :
+            - historique      : liste d'objets Historique (accès aux attributs ORM dans le template)
+            - historique_json : liste de dicts sérialisés (prête pour un usage JS/JSON dans le template)
+
+    Dépendances :
+        - flask_login : login_required, current_user
+        - models      : Historique (SQLAlchemy ORM)
+
