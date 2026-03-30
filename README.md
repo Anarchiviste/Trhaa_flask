@@ -1,5 +1,14 @@
 # Travaux de recherche en histoire de l'art et archéologie
 
+## Installer l'application
+
+Pour lancer l'application, il faut d'abord créer et compléter le .env.
+
+```
+cp .env.example .env
+```
+L'utilisateur doit compléter le lien de connexion à postgres et la clef secrète qui sert à chiffrer les mots de passe des utilisateurs.
+
 ## Initialisation de l'application
 
 Au lancement de l'application, l'application execute automatiquement deux fonctions : 
