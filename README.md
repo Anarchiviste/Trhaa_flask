@@ -9,6 +9,15 @@ cp .env.example .env
 ```
 L'utilisateur doit compléter le lien de connexion à postgres et la clef secrète qui sert à chiffrer les mots de passe des utilisateurs.
 
+```
+# Format : postgresql://UTILISATEUR:MOT_DE_PASSE@HOTE:PORT/NOM_BASE
+
+DEBUG=True
+SQLALCHEMY_DATABASE_URI=postgresql://UTILISATEUR:MOT_DE_PASSE@HOTE:PORT/NOM_BASE
+WTF_CSRF_ENABLE=True
+SECRET_KEY=your_secret_key
+```
+
 ## Initialisation de l'application
 
 Au lancement de l'application, l'application execute automatiquement deux fonctions : 
