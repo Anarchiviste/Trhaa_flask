@@ -18,7 +18,7 @@ WTF_CSRF_ENABLE=True
 SECRET_KEY=your_secret_key
 ```
 
-## Initialisation de l'application
+## Initialisation de l'application (app/app)
 
 Au lancement de l'application, l'application execute automatiquement deux fonctions : 
 
@@ -66,7 +66,7 @@ _historique_initialisation()_
         - inspect   : from sqlalchemy import inspect
         - text      : from sqlalchemy import text
 
-## Créer un utilisateur
+## Créer un utilisateur (app/generales)
 
 Plusieurs fonctionnalités de notre application demande la création d'un compte utilisateur. La création du compte passe par la route signin, et la connexion par la route login
 
@@ -136,3 +136,78 @@ _login_
           pour que @login_required redirige correctement vers cette route
         - Le paramètre 'next' est géré automatiquement par Flask-Login lors d'une
           tentative d'accès à une route protégée par @login_required
+
+## Faire une recherche (app/utils/)
+
+Dans notre application nous avons deux types de recherches, la recherche simple et la recherche avancée. 
+
+La route de recherche avancée utilise deux fonctions : 
+
+_get_options_filtres_
+    Retourne un dictionnaire contenant toutes les listes nécessaires au formulaire.
+
+    dict avec les clés :
+        typologies    : list[str] valeurs hardcodées
+        langues       : list[str] valeurs hardcodées
+        institutions  : list[str] triées alphabétiquement depuis la base
+        sujets_rameau : list[str] triés alphabétiquement depuis la base
+
+_recherche_avancee_
+
+    Recherche avancée dans la base TRHAA.
+
+    Tous les paramètres sont optionnels et indépendants. Les filtres actifs se combinent en AND.
+
+    auteur : str | None
+    Correspondance stricte insensible à la casse sur DefAuteur.auteur_nom. Exemple : 'dupont' matche 'Dupont'.
+
+    institution : str | None
+    Valeur exacte issue de la liste retournée par get_options_filtres(). Comparaison stricte insensible à la casse.
+
+    typologie : str | None
+    Une des quatre valeurs : 'mémoire', 'thèse', 'ouvrage', 'DPLG'. Comparaison exacte (les valeurs en base sont déjà propres).
+
+    langue : str | None
+    Une des quatre valeurs : 'Français', 'Anglais', 'Allemand', 'Portugais'. Comparaison exacte.
+
+    date_min : int | str | None
+    Année entière ex. 2005. La fonction construit 'YYYY-01-01'.
+
+    date_max : int | str | None
+    Année entière ex. 2015.
+
+    sujet_rameau : str | None
+    Valeur exacte issue de la liste retournée par get_options_filtres().Les valeurs en base sont toutes en minuscules.
+
+    Retourne
+    list[dict]
+    Chaque dictionnaire contient :
+    id, titre, auteur_nom, auteur_prenom,
+    institution, typologie, langue, date_publication
+
+_barrer_recherche_simple_
+
+    Recherche plein texte dans la base TRHAA.
+
+    Utilise le Full Text Search PostgreSQL avec le dictionnaire 'french' qui gère la morphologie française (accents, pluriels, conjugaisons).
+
+    La recherche porte simultanément sur :
+        - DefPublication.titre
+        - DefAuteur.auteur_nom
+        - DefAuteur.auteur_prenom
+
+    Les résultats sont triés par pertinence décroissante — les publications dont le texte correspond le mieux à la recherche apparaissent en premier.
+
+    Paramètres
+    recherche : str
+    Texte libre saisi par l'utilisateur. Exemples :
+        "peinture flamande"
+        "Prunet"
+        "archéologie romaine Gaule"
+
+    Retourne
+    list[dict]
+    Chaque dict contient :
+        id, titre, auteur_nom, auteur_prenom,
+        institution, typologie, langue, date_publication
+    Liste vide si la recherche est vide ou ne donne aucun résultat.
