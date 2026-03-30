@@ -185,7 +185,7 @@ _recherche_avancee_
     id, titre, auteur_nom, auteur_prenom,
     institution, typologie, langue, date_publication
 
-_barrer_recherche_simple_
+_barre_recherche_simple_
 
     Recherche plein texte dans la base TRHAA.
 
