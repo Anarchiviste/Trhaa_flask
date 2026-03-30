@@ -72,8 +72,6 @@ Plusieurs fonctionnalités de notre application demande la création d'un compte
 
 _signin_
 
-signin():
-
     FlaskForm AjoutUtilisateur pour créer un nouveau compte.
 
     Comportement :
@@ -144,6 +142,7 @@ Dans notre application nous avons deux types de recherches, la recherche simple 
 La route de recherche avancée utilise deux fonctions : 
 
 _get_options_filtres_
+
     Retourne un dictionnaire contenant toutes les listes nécessaires au formulaire.
 
     dict avec les clés :
@@ -214,7 +213,7 @@ _barre_recherche_simple_
 
 ## Utiliser l'historique de recherche (app/generales)
 
-Toutes les fonctions de recherche rendent une variable résultats suivit d'un commit permettant d'ajouter à la table de résultat nos recherches pour l'historique. L'historique enregistre qui a rechercher ce résultat, et quand. 
+Toutes les fonctions de recherche rendent une variable résultats suivit d'un commit permettant d'ajouter à la table de résultat nos recherches pour l'historique. L'historique enregistre l'utilisateur chercheur et une date.
 
     if resultats and current_user.is_authenticated:
         for res in resultats[:50]:
