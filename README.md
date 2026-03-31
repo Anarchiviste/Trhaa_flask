@@ -144,6 +144,64 @@ Retourne toutes les listes nécessaires à l'alimentation du formulaire de reche
 | `sujets_rameau` | `list[str]` | Base de données, ordre alphabétique |
  
 ---
+ 
+### `recherche_avancee(**kwargs)`
+ 
+Recherche avancée dans la base TRHAA. Tous les paramètres sont optionnels et indépendants ; les filtres actifs se combinent en `AND`.
+ 
+**Paramètres :**
+ 
+| Paramètre | Type | Description |
+|---|---|---|
+| `auteur` | `str \| None` | Correspondance insensible à la casse sur `DefAuteur.auteur_nom` |
+| `institution` | `str \| None` | Valeur exacte issue de `get_options_filtres()` |
+| `typologie` | `str \| None` | `'mémoire'`, `'thèse'`, `'ouvrage'` ou `'DPLG'` |
+| `langue` | `str \| None` | `'Français'`, `'Anglais'`, `'Allemand'` ou `'Portugais'` |
+| `date_min` | `int \| str \| None` | Année entière (ex. `2005`) — la fonction construit `YYYY-01-01` |
+| `date_max` | `int \| str \| None` | Année entière (ex. `2015`) |
+| `sujet_rameau` | `str \| None` | Valeur exacte issue de `get_options_filtres()` (stockée en minuscules) |
+ 
+**Retourne :** `list[dict]` — chaque dict contient `id`, `titre`, `auteur_nom`, `auteur_prenom`, `institution`, `typologie`, `langue`, `date_publication`.
+ 
+---
+ 
+### `barre_recherche_simple(recherche)`
+ 
+Recherche plein texte dans la base TRHAA, utilisant le **Full Text Search PostgreSQL** avec le dictionnaire `french` (gestion de la morphologie française : accents, pluriels, conjugaisons).
+ 
+La recherche porte simultanément sur `DefPublication.titre`, `DefAuteur.auteur_nom` et `DefAuteur.auteur_prenom`. Les résultats sont triés par score de pertinence décroissant (`ts_rank`).
+ 
+**Paramètre :**
+ 
+| Paramètre | Type | Exemples |
+|---|---|---|
+| `recherche` | `str` | `"peinture flamande"`, `"Prunet"`, `"archéologie romaine Gaule"` |
+ 
+**Retourne :** `list[dict]` dans le même format que `recherche_avancee()`. Retourne une liste vide si la recherche est vide ou ne produit aucun résultat.
+ 
+**Historique :** après sérialisation des résultats, la fonction enregistre automatiquement jusqu'à 50 entrées dans la table `Historique` pour l'utilisateur connecté :
+ 
+```python
+if resultats and current_user.is_authenticated:
+    for res in resultats[:50]:
+        db.session.add(Historique(
+            id_user             = str(current_user.id),
+            nom_user            = current_user.name,
+            result_author       = f"{res.get('auteur_nom', '')} {res.get('auteur_prenom', '')}".strip()[:100] or '',
+            result_title        = (res.get('titre') or '')[:200],
+            result_institution  = (res.get('institution') or '')[:100],
+            result_date_min     = res.get('date_publication') or '',
+            result_typologie    = (res.get('typologie') or '')[:100],
+            result_langue       = (res.get('langue') or '')[:100],
+            result_sujet_rameau = '',
+            timestamp           = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
+        ))
+    db.session.commit()
+```
+ 
+> Le champ `result_sujet_rameau` est laissé vide car il n'existe pas dans les résultats de la recherche simple. Le `commit` est effectué une seule fois après la boucle.
+ 
+---
 
 ## Utiliser l'historique de recherche (app/generales)
 
