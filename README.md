@@ -203,68 +203,64 @@ if resultats and current_user.is_authenticated:
  
 ---
 
-## Utiliser l'historique de recherche (app/generales)
-
-Toutes les fonctions de recherche rendent une variable résultats suivit d'un commit permettant d'ajouter à la table de résultat nos recherches pour l'historique. L'historique enregistre l'utilisateur chercheur et une date.
-
-    if resultats and current_user.is_authenticated:
-        for res in resultats[:50]:
-            db.session.add(Historique(
-                id_user             = str(current_user.id),
-                nom_user            = current_user.name,
-                result_author       = f"{res.get('auteur_nom', '')} {res.get('auteur_prenom', '')}".strip()[:100] or '',
-                result_title        = (res.get('titre') or '')[:200],
-                result_institution  = (res.get('institution') or '')[:100],
-                result_date_min     = res.get('date_publication') or '',
-                result_typologie    = (res.get('typologie') or '')[:100],
-                result_langue       = (res.get('langue') or '')[:100],
-                result_sujet_rameau = '',
-                timestamp           = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
-            ))
-        db.session.commit()   
-
-Pour accéder à l'historique, il suffit d'utiliser la route _historique_. La route historique ne rend que les informations liés à l'utilisateur connecté. 
-
-    Route Flask affichant l'historique des recherches de l'utilisateur connecté.
-
-    Comportements :
-        - Interroge la table Historique en filtrant sur l'id de l'utilisateur courant
-        - Trie les entrées par id décroissant (résultats les plus récents en premier)
-        - Sérialise l'ensemble des entrées en liste de dicts via to_dict()
-        - Passe les données sous deux formes au template : objets ORM et JSON
-
-        - render_template('pages/historique.html') avec :
-            - historique      : liste d'objets Historique (accès aux attributs ORM dans le template)
-            - historique_json : liste de dicts sérialisés (prête pour un usage JS/JSON dans le template)
-
-    Dépendances :
-        - flask_login : login_required, current_user
-        - models      : Historique (SQLAlchemy ORM)
-
-## Télécharger ses résultats depuis son historique 
-
-La classe Historique intègre une fonction _to_dict_ qui est donné à la route historique pour créer un paramètre historique_json qui est ensuite traité par un scripte javascript dans partials/part_ui.html et qui permet de générer et de télécharger un fichier json de l'historique de l'utililisateur.
-
-```
+## Historique de recherche
+ 
+> Module : `app/generales`
+ 
+### Enregistrement automatique
+ 
+Toutes les fonctions de recherche (`recherche_avancee`, `barre_recherche_simple`) enregistrent leurs résultats dans la table `Historique` après chaque appel réussi, à condition que l'utilisateur soit authentifié. L'entrée contient l'identifiant et le nom de l'utilisateur ainsi qu'un horodatage.
+ 
+### Route `historique` — Consulter son historique
+ 
+Affiche l'historique des recherches de l'utilisateur connecté.
+ 
+**Comportement :**
+- Interroge la table `Historique` filtrée sur `current_user.id`
+- Trie les entrées par `id` décroissant (résultats les plus récents en premier)
+- Sérialise les entrées en liste de dicts via `to_dict()`
+- Passe les données au template sous deux formes : objets ORM et JSON
+ 
+**Variables de template :**
+ 
+| Variable | Type | Usage |
+|---|---|---|
+| `historique` | `list[Historique]` | Accès aux attributs ORM dans Jinja2 |
+| `historique_json` | `list[dict]` | Consommation JavaScript / export JSON |
+ 
+**Dépendances :** `flask_login` (`login_required`, `current_user`), modèle `Historique`
+ 
+---
+ 
+## Export de l'historique
+ 
+> Partiel : `partials/part_ui.html`
+ 
+La classe `Historique` expose une méthode `to_dict()` utilisée par la route `historique` pour produire `historique_json`. Un script JavaScript intégré au template permet de télécharger l'historique complet au format JSON.
+ 
+```html
 <script id="historique-data" type="application/json">
   {{ historique_json | tojson }}
 </script>
-
+ 
 <script>
   const donneesHistorique = JSON.parse(
     document.getElementById('historique-data').textContent
   );
-
+ 
   function telechargerJSON() {
     const blob = new Blob([JSON.stringify(donneesHistorique, null, 2)], {
       type: 'application/json'
     });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
+    const a   = document.createElement('a');
+    a.href     = url;
     a.download = 'historique_recherches.json';
     a.click();
     URL.revokeObjectURL(url);
   }
 </script>
 ```
+ 
+Le fichier téléchargé est nommé `historique_recherches.json` et contient l'ensemble des entrées de l'utilisateur sérialisées avec une indentation de 2 espaces.
+ 
