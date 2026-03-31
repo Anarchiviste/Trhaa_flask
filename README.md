@@ -37,7 +37,7 @@ pip install -r requirement.txt
 
 Au lancement de l'application, l'application execute automatiquement deux fonctions : 
 
-_password_initialisation()_
+### `password_initialisation()`
 
 Vérifie si la colonne 'password' existe dans la table 'users' et l'ajoute si elle est absente.
 
