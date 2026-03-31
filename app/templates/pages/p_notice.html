@@ -4,45 +4,37 @@
 <div class="notice">
 
     {% if pub.titre %}
-    <h1>{{ pub.titre }}</h1>
+    <h2>{{ pub.titre }}</h2>
     {% endif %}
 
-    <dl>
-        {% if pub.auteur_nom or pub.auteur_prenom %}
-        <dt>Auteur</dt>
-        <dd>{{ pub.auteur_nom or '' }} {{ pub.auteur_prenom or '' }}</dd>
-        {% endif %}
+    {% if pub.auteur_nom or pub.auteur_prenom %}
+    <p><strong>Auteur.ice : </strong>{{ pub.auteur_nom or '' }}, {{ pub.auteur_prenom or '' }}</p>
+    {% endif %}
 
-        {% if pub.date_publication %}
-        <dt>Date de publication</dt>
-        <dd>{{ pub.date_publication }}</dd>
-        {% endif %}
+    {% if pub.date_publication %}
+    <p><strong>Date de publication :</strong> {{ (pub.date_publication)[:4]}}</p>
+    {% endif %}
 
-        {% if pub.institution %}
-        <dt>Lieu de publication</dt>
-        <dd>{{ pub.institution }}</dd>
-        {% endif %}
+    {% if pub.institution %}
+    <p><strong>Université :</strong> {{ pub.institution }}</p>
+    {% endif %}
 
-        {% if pub.langue %}
-        <dt>Langue</dt>
-        <dd>{{ pub.langue }}</dd>
-        {% endif %}
+    {% if pub.langue %}
+    <p><strong>Langue :</strong> {{ pub.langue }}</p>
+    {% endif %}
 
-        {% if pub.typologie %}
-        <dt>Typologie</dt>
-        <dd>{{ pub.typologie }}</dd>
-        {% endif %}
+    {% if pub.typologie %}
+    <p><strong>Typologie :</strong> {{ pub.typologie }}</p>
+    {% endif %}
 
-        {% if pub.linkagorha %}
-        <dt>Lien Agorha</dt>
-        <dd><a href="{{ pub.linkagorha }}" target="_blank">{{ pub.linkagorha }}</a></dd>
-        {% endif %}
+    {% if pub.linkagorha %}
+    <p><strong>Lien Agorha :</strong> <a href="{{ pub.linkagorha }}" target="_blank">{{ pub.linkagorha }}</a></p>
+    {% endif %}
 
-        {% if pub.linkpublication %}
-        <dt>Lien publication</dt>
-        <dd><a href="{{ pub.linkpublication }}" target="_blank">{{ pub.linkpublication }}</a></dd>
-        {% endif %}
-    </dl>
+    {% if pub.linkpublication %}
+    <p><strong>Lien publication :</strong> <a href="{{ pub.linkpublication }}" target="_blank">{{ pub.linkpublication }}</a></p>
+    {% endif %}
+
 
 </div>
 {% endblock%}
