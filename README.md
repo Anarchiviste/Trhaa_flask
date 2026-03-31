@@ -91,29 +91,39 @@ Dépendances :
 
 Plusieurs fonctionnalités de notre application demande la création d'un compte utilisateur. La création du compte passe par la route signin, et la connexion par la route login
 
-### `signin`
+### `signin()`
 
-    FlaskForm AjoutUtilisateur pour créer un nouveau compte.
+Nous utilisons un FlaskForm AjoutUtilisateur pour créer un nouveau compte.
 
-    Comportement :
+Comportement :
         - Initialise le formulaire avec la bonne classe
         - Récupère les données avec validate_on_submit()
         - Vérifie l'intégrité des champs reçus
         - Si l'ajout est réussi, renvoit vers le login, 
         sinon renvoit de nouveau vers le signin
 
-    Retourne : 
-        Création réussie
-            - Redirige vers la route login avec un message flash de succès.
-        Création échouée
-            - Réaffiche la page sign-in.html avec les erreurs et le formulaire.
-        Formulaire non soumis/valide
-            - Affiche la page sign-in.html avec le formulaire.
+Retourne : 
+
+Création réussie
+    
+- Redirige vers la route login avec un message flash de succès.
         
-    Dépendances : 
-        - Flask
-        - Flask-Login
-        - Flask-WTF
+    Création échouée
+    
+        - Réaffiche la page sign-in.html avec les erreurs et le formulaire.
+        
+    Formulaire non soumis/valide
+    
+        - Affiche la page sign-in.html avec le formulaire.
+        
+Dépendances : 
+
+- Flask
+    
+- Flask-Login
+        
+    - Flask-WTF
+  
         - Flask-SQLAlchemy
         - User.compte_utilisateur : Méthode statique pour créer un compte utilisateur.
         - Flaskform AjoutUtilistateur
