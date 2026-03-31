@@ -11,8 +11,24 @@ WIKIDATA_SPARQL_URL = "https://query.wikidata.org/sparql"
 
 def francais_vers_anglais(country_name: str) -> str | None:
     """
-    Interroge Wikidata pour trouver le label anglais d'un pays
-    à partir d'un label dans n'importe quelle langue.
+    Interroge Wikidata pour obtenir le label anglais d'un pays à partir d'un label en français. 
+
+    Cette fonction envoie une requête SPARQL à l'API Wikidata pour rechercher un pays dont le label correspond
+    au nom fourni en français. Si le pays est trouvé, son label anglais est retourné. Sinon, une alternative
+    sans contrainte de langue est tentée via la fonction `sparql_sans_resultat_fr`.
+
+    Paramètres: country_name (str): Le nom d'un pays, typiquement en français, mais peut être dans n'importe quelle langue.
+
+    Retourne: str | None: 
+        - Le label en anglais du pays, si trouvé.
+        - None si le pays n'est pas trouvé ou en cas d'erreur.
+
+    Exception: Une erreur est imprimée en cas d'échec de la requête SPARQL ou de traitement des résultats.
+
+    Dépendances:
+        - `requests`: Utilisé pour envoyer la requête HTTP à l'API SPARQL de Wikidata.
+        - `sparql_sans_resultat_fr`: Fonction auxiliaire pour relancer une requête SPARQL sans contrainte de langue.
+        - `WIKIDATA_SPARQL_URL`: URL de l'endpoint SPARQL de Wikidata (variable).
     """
     # Requête SPARQL : cherche une entité de type "pays" (Q6256) dont un label (toutes langues) correspond au nom fourni
     sparql_query = f"""
@@ -49,9 +65,32 @@ def francais_vers_anglais(country_name: str) -> str | None:
 
 def sparql_sans_resultat_fr(country_name: str) -> str | None:
     """
-    Recherche sans contrainte de langue — utile si le nom est déjà en anglais ou dans une autre langue.
-    Cela parait contre-intuitif puisque nous savons que notre BDD est entièrement en français. Mais c'est surtout pour contrer des erreurs. 
-    Par exemple, comme France, se dit aussi "France" en anglais, il ne trouvera pas de noms en français et s'arrêtera là.
+    Recherche le label anglais d'un pays sans contrainte de langue sur le label d'entrée.
+
+    Cette fonction est utilisée comme solution de repli pour `francais_vers_anglais` lorsque la recherche
+    initiale en français ne donne pas de résultat. Elle permet de contourner les cas où le nom du pays
+    est déjà en anglais (ex: "France" en français et en anglais), ou lorsqu'il n'existe pas de label
+    en français pour ce pays dans Wikidata.
+    La requête SPARQL ne filtre pas par langue, ce qui élargit la recherche à toutes les langues.
+    Le label anglais est toujours retourné si disponible.
+
+    Paramètres:
+        country_name (str): Le nom du pays à rechercher.
+
+    Retourne: str | None:
+        - Le label anglais du pays si trouvé.
+        - None si le pays n'est pas trouvé ou en cas d'erreur.
+
+    Exception: Une erreur est imprimée en cas d'échec de la requête SPARQL ou de traitement des résultats.
+
+    Dépendances :
+        - `requests`: Utilisé pour envoyer la requête HTTP à l'API SPARQL de Wikidata.
+        - `WIKIDATA_SPARQL_URL`: URL de l'endpoint SPARQL de Wikidata (variable).
+
+    Notes:
+        - Cette fonction peut imprimer des messages de débogage pour indiquer qu'une recherche sans contrainte
+          de langue est en cours.
+        - Elle est conçue pour être appelée uniquement si la recherche initiale en français échoue.
     """
     print("Recherche d'un nom dans une autre langue que le français")
     sparql_query = f"""
@@ -81,6 +120,37 @@ def sparql_sans_resultat_fr(country_name: str) -> str | None:
         return None
 
 def build_country_map(app, db):
+    """
+    Construit une carte (dictionnaire) de traduction des noms de pays du français vers l'anglais.
+    Cette fonction extrait tous les noms de pays distincts depuis trois tables de la base de données
+    (`WikidataPlaces`, `WikidataOrganizations`, `WikidataArchaeologicalSites`), puis utilise l'API
+    Wikidata pour traduire chaque nom de pays du français vers l'anglais. Les résultats sont sauvegardés
+    dans un fichier JSON pour éviter de refaire la traduction à chaque exécution.
+
+    La fonction utilise `app.app_context()` pour gérer le contexte SQLAlchemy hors application Flask,
+    et respecte les limites de l'API Wikidata avec un délai (`time.sleep(0.5)`) entre chaque requête.
+
+    Paramètres:
+        app: L'application Flask, pour gérer le contexte SQLAlchemy.
+        db: L'objet base de données (SQLAlchemy) pour exécuter les requêtes.
+
+    Retourne: dict: Un dictionnaire où les clés sont les noms de pays en français et les valeurs sont
+    les noms de pays en anglais (ou le nom original en français si la traduction échoue).
+
+    Dependencies:
+        - `flask.Flask` ou équivalent : Pour gérer le contexte d'application.
+        - `sqlalchemy`: Pour exécuter les requêtes SQL sur les tables de la base de données.
+        - `json`: Pour sauvegarder les résultats dans un fichier JSON.
+        - `os`: Pour construire le chemin du fichier de sortie.
+        - `time`: Pour ajouter un délai entre les requêtes à l'API Wikidata.
+        - `francais_vers_anglais`: Fonction utilitaire pour traduire les noms de pays.
+
+    Notes:
+        - Les tables interrogées sont `WikidataPlaces`, `WikidataOrganizations`, et `WikidataArchaeologicalSites`.
+        - Les noms de pays sont dédupliqués avant traitement.
+        - Les résultats sont sauvegardés dans `statics/pays_traduits.json` pour être réutilisés.
+        - Un délai de 0.5 seconde est ajouté entre chaque requête à Wikidata pour éviter de dépasser les limites.
+    """
     with app.app_context(): # Nous devons utiliser "app_context" parce que nous utilisons SqlAlchemy dans ce script hors application. Ce n'est pas fait pour et il a besoin d'un contexte. C'est ce que fait app_context
         # Récupère tous les noms de pays. 
         rows_places = db.session.query(WikidataPlaces.country)\

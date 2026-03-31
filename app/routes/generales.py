@@ -395,38 +395,35 @@ for db_name, en_name in COUNTRY_MAP.items():
 # Affiche la page avec la carte. 
 @app.route('/p_carto')
 def p_carto():
-    """
-    Retourne une page HTML de cartographie des pays ayant au moins une publication.
+    """    
+    Endpoint Flask qui génère une carte des pays ayant au moins une publication.
 
-    Cette fonction collecte les noms français des pays enregistrés dans les tables
-    `WikidataPlaces`, `WikidataOrganizations` et `WikidataArchaeologicalSites` via des requêtes SQL,
-    puis filtre et traduit ces noms en anglais pour identifier les pays éligibles.
-    Enfin, elle rend un template Flask avec les données nécessaires à la visualisation cartographique.
+    Cette fonction interroge la base de données pour récupérer tous les noms de pays distincts
+    (en français) qui sont associés à au moins une publication via les tables
+    `WikidataPlaces`, `WikidataOrganizations`, ou `WikidataArchaeologicalSites`.
+    Les noms sont ensuite traduits en anglais via un dictionnaire de traduction (`COUNTRY_MAP`),
+    et le résultat est passé à un template HTML pour affichage cartographique.
+    La fonction utilise des jointures avec la table `DefLiaisonSujets` pour filtrer les pays
+    qui ont des publications associées. Le dictionnaire de traduction est chargé depuis un
+    fichier JSON pour éviter de refaire les traductions à chaque appel.
 
-    Processus :
-    1. Interroge la base de données pour récupérer les pays distincts (avec `country` non null).
-    2. Fusionne les résultats en un ensemble (`set`) pour éviter les doublons.
-    3. Traduit les noms français en noms anglais via `COUNTRY_MAP`.
-    NB : COUNTRY_MAP contient le json pays_traduits.json
-    4. Charge le fichier JSON de traduction (`pays_traduits.json`) pour le rendre accessible dans le
-    fichier HTML. 
-    5. Rend le template `pages/p_carto.html` avec :
-       - `COUNTRY_MAP` : Carte complète des traductions pays.
-       - `PAYS_AVEC_PUBLICATIONS` : Liste des pays éligibles (en anglais).
+    Retourne:
+        render_template: Affiche la page `p_carto.html` avec les données nécessaires :
+            - `COUNTRY_MAP` : Dictionnaire de traduction français → anglais. Fichier pays_traduits.json
+            - `PAYS_AVEC_PUBLICATIONS` : Liste des noms de pays en anglais ayant au moins une publication.
 
-    Returns: flask.Response: Page HTML rendue (`render_template`) avec les variables nécessaires à la cartographie.
-
-    Dépendances :
-        - Flask (app, render_template)
-        - SQLAlchemy (db.session, query, join, filter, distinct)
-        - Modules Python : os, json
-        - Classes : WikidataPlaces, WikidataOrganizations, WikidataArchaeologicalSites, DefLiaisonSujets
-        - Fichier statique : `statics/pays_traduits.json`
+    Dépendances:
+        - `flask`: Pour définir l'itinéraire (`@app.route`) et rendre le template.
+        - `sqlalchemy`: Pour exécuter les requêtes SQL sur les tables de la base de données.
+        - `os`: Pour construire le chemin du fichier de traduction.
+        - `json`: Pour charger le dictionnaire de traduction depuis le fichier JSON.
+        - `WikidataPlaces`, `WikidataOrganizations`, `WikidataArchaeologicalSites`, `DefLiaisonSujets`:
+          Classes ou tables SQLAlchemy utilisées pour les requêtes.
 
     Notes:
-        - `COUNTRY_MAP` est un dictionnaire global de correspondance (ex: {"France": "France", ...}).
-        - Le fichier `pays_traduits.json` est attendu dans le dossier `statics` du projet.
-        - La liste `pays_en_avec_publications` est filtrée pour exclure les valeurs `None`.
+        - Les requêtes SQL utilisent des jointures pour lier les tables et filtrer les pays avec publications.
+        - Le dictionnaire `COUNTRY_MAP` est attendu dans le dossier `statics` sous le nom `pays_traduits.json`.
+        - Les noms de pays sont dédupliqués avant d'être traduits.
     """
     # Collecte les noms français distincts des pays ayant ≥ 1 publication
     pays_places = db.session.query(WikidataPlaces.country).join(
@@ -463,41 +460,44 @@ def p_carto():
 @app.route('/c_publication_count')
 def get_publications_count():
     """
-    Retourne le nombre de publications associées à un pays donné, via une requête HTTP GET.
+    Endpoint Flask qui retourne le nombre de publications associées à un pays donné.
 
-    Cette fonction prend en paramètre un nom de pays en anglais (format GeoJSON) et retourne
-    le nombre total de publications liées à ce pays dans la base de données. Elle utilise des
-    jointures externes (`isouter=True`) pour inclure les publications liées aux lieux, organisations
-    ou sites archéologiques, même en l'absence de correspondance directe.
+    Cette fonction interroge la base de données pour compter le nombre de publications
+    liées à un pays, en utilisant son nom en anglais (comme dans le GeoJSON).
+    Le nom anglais est converti en noms français (stockés en base) via `COUNTRY_MAP_INVERSE`.
+    La requête SQL utilise des jointures avec les tables `WikidataPlaces`, `WikidataOrganizations`,
+    et `WikidataArchaeologicalSites` pour couvrir tous les types d'entités géographiques
+    associées aux publications.
 
-    Args:
-        request.args.get('country', str):
-            Nom du pays en anglais (ex: "France", "Germany"). Si non fourni, retourne le compte total.
+    Paramètres:
+        country (str, optionnel): Le nom du pays en anglais (ex: "France"). Si non fourni, retourne le compte total.
 
-    Processus :
-    1. Convertit le nom anglais en noms français via `COUNTRY_MAP_INVERSE`.
-    2. Exécute une requête SQL pour compter les publications associées aux pays correspondants.
-    3. Utilise des jointures externes pour inclure toutes les tables liées (`WikidataPlaces`, etc.).
-    4. Filtre les résultats pour ne garder que les publications liées aux pays ciblés.
-    5. Retourne le compte sous forme de JSON.
+    Retourne:
+        Response (flask.Response): Une réponse JSON contenant le nombre de publications associées : `{ "count": <int> }`.
 
-    Returns:
-        flask.Response:
-            Réponse JSON contenant le nombre de publications :
-            `{"count": <int>}`.
-
-    Dépendances :
-        - Flask (app, request)
-        - SQLAlchemy (db.session, query, join, filter, count, isouter)
-        - Modules Python : json
-        - Classes : DefPublication, DefLiaisonSujets, WikidataPlaces, WikidataOrganizations, WikidataArchaeologicalSites
-        - Constantes : COUNTRY_MAP_INVERSE
+    Dependencies:
+        - `flask`: Pour définir l'itinéraire (`@app.route`) et retourner une réponse JSON.
+        - `request`: Pour récupérer le paramètre `country` depuis l'URL.
+        - `sqlalchemy`: Pour exécuter les requêtes SQL sur la base de données.
+        - `jsonify`: Pour formater la réponse en JSON.
+        - `COUNTRY_MAP_INVERSE`: Dictionnaire inversé (anglais → français) pour la traduction des noms.
+        - `DefPublication`, `DefLiaisonSujets`, `WikidataPlaces`, `WikidataOrganizations`, `WikidataArchaeologicalSites`:
+          Modèles SQLAlchemy utilisés pour les requêtes.
 
     Notes:
-        - La conversion `COUNTRY_MAP_INVERSE` est utilisée pour retrouver les noms français en base.
-        - Les jointures externes (`isouter=True`) garantissent que toutes les publications sont comptées,
-          même sans correspondance directe dans les tables de lieux/organisations/sites.
-        - La requête filtre les résultats avec un `OR` logique sur les trois tables.
+        - Les jointures sont effectuées avec `isouter=True` pour inclure les entités même si aucune publication n'y est associée.
+        - Le filtre utilise un `OR` pour couvrir les trois tables de pays possibles.
+        - Si le paramètre `country` n'est pas fourni, la fonction retourne le compte total de toutes les publications.
+
+    Example:
+        >>> # Appel avec le paramètre `country` :
+        >>> response = get_publications_count()
+        >>> # Si l'URL est `/c_publication_count?country=France`
+        >>> # Retourne : {"count": 150}
+
+        >>> # Appel sans paramètre :
+        >>> response = get_publications_count()
+        >>> # Retourne : {"count": 1250} (compte total)
     """
     country_en = request.args.get('country', '')
 

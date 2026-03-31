@@ -105,6 +105,20 @@
     });
 
     //Construit l'infobulle en fonction des données. 
+    /**
+     * Construit le HTML d'un tooltip pour afficher les informations d'un pays.
+     * Cette fonction génère une chaîne HTML structurée pour afficher :
+     * - Le nom du pays (en français si disponible, sinon en anglais).
+     * - Le nombre de publications associées (si le pays est référencé dans la base).
+     * - Un badge indiquant si le pays est référencé dans THRAA ou non.
+     *
+     * @param {string} nameFr - Le nom du pays en français.
+     * @param {string} nameEn - Le nom du pays en anglais.
+     * @param {number} count - Le nombre de publications associées au pays (si référencé).
+     * @param {boolean} inDB - Indique si le pays est référencé dans la base de données (`true`) ou non (`false`).
+     *
+     * @returns {string} Une chaîne HTML représentant le tooltip.
+     */
     function buildTooltipHTML(nameFr, nameEn, count, inDB) {
         const badge = inDB
             ? `<span class="tt-badge in-base">Référencé dans THRAA</span>`
@@ -122,6 +136,22 @@
     }
 
     // Événements par pays
+    /**
+     * Callback Leaflet pour chaque feature (pays) du GeoJSON.
+     * Attache des gestionnaires d'événements pour afficher/mettre à jour une infobulle,
+     * styliser la feature au survol, et gérer les clics.
+     *
+     * @param {Object} feature - La feature GeoJSON représentant un pays.
+     * @param {Object} layer - L'objet `L.Layer` Leaflet associé à la feature.
+     *
+     * @description
+     * - **Survol** (`mouseover`) : Affiche une infobulle avec le nom du pays et, si référencé dans la base,
+     *   le nombre de publications. Met à jour le style de la feature.
+     * - **Déplacement de la souris** (`mousemove`) : Déplace l'infobulle avec la souris.
+     * - **Sortie de la souris** (`mouseout`) : Ferme l'infobulle et réinitialise le style.
+     * - **Clique** (`click`) : Redirige vers la page de recherche avancée si le pays est référencé.
+     *
+     */
     function onEachFeature(feature, layer) {
         const nameEn = feature.properties.ADMIN || feature.properties.name || '';
         const nameFr = EN_TO_FR[nameEn] || nameEn;   // nom français via COUNTRY_MAP inversé

@@ -264,3 +264,75 @@ La classe `Historique` expose une méthode `to_dict()` utilisée par la route `h
  
 Le fichier téléchargé est nommé `historique_recherches.json` et contient l'ensemble des entrées de l'historique de l'utilisateur.
  
+## Page de cartographie 
+
+La page "cartographie" figure une carte leaflet. Lors du survol de la souris une infobulle s'affiche. Elle indique si le pays est représenté dans la base de données et si oui, dans combien de publications. Cliquer sur un pays mène à la page recherche_avancée et affiche les publications concernées. 
+
+### Etape préalable à la création de la page
+
+Afin de délimiter la frontière des pays de notre carte, nous utilisons un fichier GeoJson hébergé sur Github contenant les données géographiques des frontières. Or, le nom des pays de ce fichier sont en anglais mais les pays de notre base de données sont en français. Nous devons donc traduire le nom de ces pays en premier. C'est l'objectif du script trad_pays.py, composé de 3 fonctions. 
+
+**francais_vers_anglais() :** Elle fait appelle à l'API Wikidata pour trouver la traduction en anglais des noms de pays en français.
+    Cette fonction envoie une requête SPARQL à l'API Wikidata pour rechercher un pays dont le label correspond au nom fourni en français. Si le pays est trouvé, son label anglais est retourné. Sinon, une alternative sans contrainte de langue est tentée via la fonction `sparql_sans_resultat_fr`.
+
+    Paramètres: country_name (str): Le nom d'un pays, typiquement en français, mais peut être dans n'importe quelle langue.
+
+    Retourne: str | None: 
+        - Le label en anglais du pays, si trouvé.
+        - None si le pays n'est pas trouvé ou en cas d'erreur.
+
+**sparql_sans_resultat_fr() :** Se met en marche si aucun nom n'a été trouvé en français. Fait la même chose que précédemment mais en cherchant le nom du pays dans toutes les langues. 
+    Recherche le label anglais d'un pays sans contrainte de langue sur le label d'entrée.
+
+    Cette fonction est utilisée comme solution de repli pour `francais_vers_anglais` lorsque la recherche initiale en français ne donne pas de résultat. Elle permet de contourner les cas où le nom du pays est déjà en anglais (ex: "France" en français et en anglais), ou lorsqu'il n'existe pas de label en français pour ce pays dans Wikidata. La requête SPARQL ne filtre pas par langue, ce qui élargit la recherche à toutes les langues. Le label anglais est toujours retourné si disponible.
+
+    Paramètres:
+        country_name (str): Le nom du pays à rechercher.
+
+    Retourne: str | None:
+        - Le label anglais du pays si trouvé.
+        - None si le pays n'est pas trouvé ou en cas d'erreur.
+
+**build_country_map() :** 
+- Select distinct tous les noms de pays
+- Les place dans une liste. 
+- Crée un dictionnaire avec la traduction en anglais de ces pays
+- Stocke le résultat dans un fichier Json **pays_traduits.json**, stockés dans les *statics*. 
+
+    Paramètres:
+        app: L'application Flask, pour gérer le contexte SQLAlchemy.
+        db: L'objet base de données (SQLAlchemy) pour exécuter les requêtes.
+
+    Retourne: dict: Un dictionnaire où les clés sont les noms de pays en français et les valeurs sont les noms de pays en anglais (ou le nom original en français si la traduction échoue).
+
+### Fonctionnalités de la page
+
+Le fichier Json issu de ce script est stocké dans les `statics` et appelé dans la route `p_carto` qui le transmet au fichier html `p_carto.html` afin qu'il soit utilisé dans le script javascript. Cette même route lance la page HTML. 
+    
+**p_carto :** Retourne une page HTML de cartographie des pays ayant au moins une publication.
+- Cette fonction interroge la base de données pour récupérer tous les noms de pays distincts (en français) qui sont associés à au moins une publication via les tables `WikidataPlaces`, `WikidataOrganizations`, ou `WikidataArchaeologicalSites`. 
+- Les noms sont traduits en anglais via un dictionnaire de traduction (`COUNTRY_MAP`)
+- Le résultat est passé à un template HTML pour affichage cartographique. 
+La fonction utilise des jointures avec la table `DefLiaisonSujets` pour filtrer les pays qui ont des publications associées. Le dictionnaire de traduction est chargé depuis un fichier JSON pour éviter de refaire les traductions à chaque appel.
+
+    Retourne:
+        render_template: Affiche la page `p_carto.html` avec les données nécessaires :
+            - `COUNTRY_MAP` : Dictionnaire de traduction français → anglais. Fichier pays_traduits.json
+            - `PAYS_AVEC_PUBLICATIONS` : Liste des noms de pays en anglais ayant au moins une publication.
+
+Une fois arrivé sur la page, le survol de la souris affiche si le pays sélectionné apparait dans la base de données, et si oui, combien de fois. Cette action mobilise plusieurs fonctions javascript et deux routes : 
+- **styleDefault()** affiche les couleurs de bases des pays en fonction de leur présence dans la base de données
+- **styleHover()** fait changer la couleur des pays survolés. 
+- **tooltip** créer l'infobulle et **buildTooltipHTML()** la remplie en fonction des informations de la base de données.
+- **fetchPubCount()** récuppère le nombre de publications grâce à la route **c_publication_count()** : 
+    - Cette fonction interroge la base de données pour compter le nombre de publications liées à un pays, en utilisant son nom en anglais. 
+    - Le nom anglais est converti en noms français (stockés en base) via `COUNTRY_MAP_INVERSE`. 
+    La requête SQL utilise des jointures avec les tables `WikidataPlaces`, `WikidataOrganizations`, et `WikidataArchaeologicalSites` pour couvrir tous les types d'entités géographiques associées aux publications.
+
+    Paramètres:
+        country (str, optionnel): Le nom du pays en anglais (ex: "France"). Si non fourni, retourne le compte total.
+
+    Retourne:
+        Response (flask.Response): Une réponse JSON contenant le nombre de publications associées : `{ "count": <int> }`.
+- Tout cela est concrétisé par la fonction jv **onEachFeature()** qui prend en compte toutes les actions réalisables par pays. Elle détermine si il se passe quelque chose quand la souris arrive sur un pays et qu'elle en sort, soit l'affichage et la disparition de l'infobulle. Et enfin elle déterminer ce qu'il se passe quand on clique sur un pays. Cette action mobilise la route **e_recherche_avancee()**.
+
