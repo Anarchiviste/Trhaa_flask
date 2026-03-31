@@ -229,7 +229,7 @@ def e_recherche_avancee():
     
 @app.context_processor
 def inject_recherche():
-    ROUTES_AVEC_OPTIONS = ('home', 'e_recherche_avancee')
+    ROUTES_AVEC_OPTIONS = ('home')
     if request.endpoint in ROUTES_AVEC_OPTIONS:
         try:
             return dict(options=get_options_filtres(), resultats=None)
