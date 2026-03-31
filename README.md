@@ -262,5 +262,5 @@ La classe `Historique` expose une méthode `to_dict()` utilisée par la route `h
 </script>
 ```
  
-Le fichier téléchargé est nommé `historique_recherches.json` et contient l'ensemble des entrées de l'utilisateur sérialisées avec une indentation de 2 espaces.
+Le fichier téléchargé est nommé `historique_recherches.json` et contient l'ensemble des entrées de l'historique de l'utilisateur.
  
