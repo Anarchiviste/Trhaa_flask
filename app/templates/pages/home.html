@@ -38,21 +38,17 @@
     {% if resultats %}
     <table>
         <tr>
-            <th>Titre</th>
-            <th>Auteur</th>
-            <th>Institution</th>
-            <th>Typologie</th>
-            <th>Langue</th>
-            <th>Date</th>
+            <th>Titre</th><th>Auteur</th><th>Institution</th>
+            <th>Typologie</th><th>Langue</th><th>Date</th>
         </tr>
         {% for pub in resultats %}
         <tr>
-            <td>{{ pub.titre }}</td>
-            <td>{{ pub.auteur_nom }}, {{ pub.auteur_prenom }}</td>
-            <td>{{ pub.institution }}</td>
-            <td>{{ pub.typologie }}</td>
-            <td>{{ pub.langue }}</td>
-            <td>{{ (pub.date_publication or "")[:4]}}</td>
+            <td><a href="{{ url_for('e_notice', pub_id=pub.id) }}">{{ pub.titre }}</td>
+            <td><a href="{{ url_for('e_notice', pub_id=pub.id) }}">{{ pub.auteur_nom }} {{ pub.auteur_prenom }}</a></td>
+            <td><a href="{{ url_for('e_notice', pub_id=pub.id) }}">{{ (pub.institution or "") }}</a></td>
+            <td><a href="{{ url_for('e_notice', pub_id=pub.id) }}">{{ (pub.typologie or "") }}</a></td>
+            <td><a href="{{ url_for('e_notice', pub_id=pub.id) }}">{{ (pub.langue or "") }}</a></td>
+            <td><a href="{{ url_for('e_notice', pub_id=pub.id) }}">{{ (pub.date_publication or "")[:4] }}</a></td>
         </tr>
         {% endfor %}
     </table>
