@@ -1,5 +1,5 @@
 from ..app import app, db
-from flask import render_template, redirect, url_for, flash, request, jsonify
+from flask import render_template, redirect, url_for, flash, request, jsonify, session
 from ..models.models import User, DefTableInstitution, DefAuteur, DefPublication, DefLiaisonSujets, WikidataArchaeologicalSites, WikidataPersons, WikidataPlaces, WikidataConcepts, WikidataOrganizations, WikidataArtMovements, WikidataTimePeriods, Historique
 from sqlalchemy import text, inspect
 from ..models.formulaires import AjoutUtilisateur, LoginUtilisateur
@@ -7,6 +7,7 @@ from ..utils.recherche_avancee import recherche_avancee, get_options_filtres
 from flask_login import current_user, login_required, logout_user, login_user
 from datetime import datetime
 from ..utils.recherche_simple import barre_recherche_simple
+from ..utils.chronologie import get_donnees_chronologie
 import json
 import os
 
@@ -33,6 +34,18 @@ def home():
             sujet_rameau  = request.form.get('sujet_rameau'),
             ids_a_inclure = ids_a_inclure,
         )
+
+        # Mémorisation des paramètres de recherche pour la chronologie
+        session['recherche_params'] = {
+            'q':           q,
+            'auteur':      request.form.get('auteur', ''),
+            'institution': request.form.get('institution', ''),
+            'typologie':   request.form.get('typologie', ''),
+            'langue':      request.form.get('langue', ''),
+            'date_min':    request.form.get('date_min', ''),
+            'date_max':    request.form.get('date_max', ''),
+            'sujet_rameau':request.form.get('sujet_rameau', ''),
+        }
 
     return render_template('pages/home.html', resultats=resultats, q=q)
 
@@ -223,6 +236,62 @@ def inject_recherche():
         except Exception:
             return dict(options={}, resultats=None)
     return {}
+
+@app.route('/chronologie')
+def chronologie():
+    """
+    Affiche la frise chronologique des sujets Rameau.
+
+    Comportement :
+        - Si une recherche a été effectuée sur /home, ses paramètres sont stockés
+          en session (recherche_params). La route les rejoue pour obtenir les IDs
+          filtrés, puis appelle get_donnees_chronologie() avec ces IDs.
+        - Sans recherche préalable, affiche le corpus complet (ids=None).
+
+    Retourne :
+        render_template('pages/p_chronologie.html') avec les variables :
+            donnees          dict  données brutes pour Chart.js (| tojson en template)
+            est_filtre       bool  True si les données proviennent d'une recherche
+            nb_resultats     int   publications uniques dans la plage 1990-2024
+            nb_sujets_total  int   nombre de sujets distincts avant plafonnement
+            top_n_applique   bool  True si limité au Top 10
+            aucun_resultat   bool  True si aucune donnée disponible
+    """
+    params     = session.get('recherche_params')
+    est_filtre = params is not None
+
+    if params:
+        ids_a_inclure = None
+        if params.get('q'):
+            resultats_simple = barre_recherche_simple(params['q'])
+            ids_a_inclure    = [r['id'] for r in resultats_simple]
+
+        resultats = recherche_avancee(
+            auteur        = params.get('auteur')       or None,
+            institution   = params.get('institution')  or None,
+            typologie     = params.get('typologie')    or None,
+            langue        = params.get('langue')       or None,
+            date_min      = params.get('date_min')     or None,
+            date_max      = params.get('date_max')     or None,
+            sujet_rameau  = params.get('sujet_rameau') or None,
+            ids_a_inclure = ids_a_inclure,
+        )
+        ids = [r['id'] for r in resultats] if resultats else []
+    else:
+        ids = None
+
+    donnees = get_donnees_chronologie(ids)
+
+    return render_template(
+        'pages/p_chronologie.html',
+        donnees         = donnees,
+        est_filtre      = est_filtre,
+        nb_resultats    = donnees['nb_resultats'],
+        nb_sujets_total = donnees['nb_sujets_total'],
+        top_n_applique  = donnees['top_n_applique'],
+        aucun_resultat  = donnees['aucun_resultat'],
+    )
+
 
 @app.route('/historique', methods=['GET'])
 @login_required

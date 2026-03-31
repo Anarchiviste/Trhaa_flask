@@ -1,1 +1,226 @@
-{% extends "base.html"%}
+{% extends "base.html" %}
+
+{# Supprime la sidebar (formulaire recherche avancée) sur cette page #}
+{% block sidebar %}{% endblock %}
+
+{% block content %}
+<div class="chrono-wrapper">
+
+    {# ── Bandeau contextuel ─────────────────────────────────────────────── #}
+    <div class="chrono-bandeau">
+        <h2 class="chrono-titre">Chronologie des sujets Rameau</h2>
+
+        {% if aucun_resultat %}
+            <p class="chrono-empty-msg">
+                Aucune publication ne correspond à votre recherche sur la période 1990–2024.<br>
+                <a href="{{ url_for('home') }}">← Effectuer une nouvelle recherche</a>
+            </p>
+        {% else %}
+            <div class="chrono-meta">
+                {% if est_filtre %}
+                    <span class="chrono-tag tag-filtre">Recherche filtrée</span>
+                {% else %}
+                    <span class="chrono-tag tag-corpus">Corpus complet</span>
+                {% endif %}
+
+                <span class="chrono-meta-texte">
+                    {{ nb_resultats }} publication{{ 's' if nb_resultats > 1 else '' }}
+                    entre 1990 et 2024
+                </span>
+
+                {% if top_n_applique %}
+                    <span class="chrono-tag tag-top10">
+                        Top 10 sujets affichés sur {{ nb_sujets_total }} distincts
+                    </span>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+
+    {# ── Zone graphique ─────────────────────────────────────────────────── #}
+    {% if not aucun_resultat %}
+    <div class="chrono-chart-container">
+        <canvas id="chrono-chart"></canvas>
+    </div>
+    {% endif %}
+
+</div><!-- /.chrono-wrapper -->
+
+
+{# ── Chart.js (CDN) ─────────────────────────────────────────────────────── #}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+{% if not aucun_resultat %}
+{# ── Injection des données Flask → JS ───────────────────────────────────── #}
+<script>
+    const DONNEES_CHRONO = {{ donnees | tojson }};
+</script>
+
+{# ── Rendu du graphique ──────────────────────────────────────────────────── #}
+<script>
+    (function () {
+        // Palette de 10 couleurs + 1 neutre pour "Autres"
+        const PALETTE = [
+            '#4e8fb5', '#c9a84c', '#6a9e6f', '#b56e4e', '#7b6eb5',
+            '#b54e7b', '#4eb5a8', '#9eb54e', '#b58a4e', '#5e7bb5',
+            '#666e7f'   // Autres
+        ];
+
+        // Capitalise la première lettre d'un sujet pour l'affichage
+        function capitalise(str) {
+            if (!str) return str;
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+
+        const labels   = DONNEES_CHRONO.annees;
+        const sujets   = DONNEES_CHRONO.sujets;
+        const entrees  = Object.entries(sujets);
+
+        const datasets = entrees.map(([sujet, counts], i) => ({
+            label:           capitalise(sujet),
+            data:            counts,
+            backgroundColor: PALETTE[Math.min(i, PALETTE.length - 1)],
+            borderWidth:     0,
+            borderRadius:    2,
+        }));
+
+        const ctx = document.getElementById('chrono-chart').getContext('2d');
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: { labels, datasets },
+            options: {
+                responsive:          true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color:          '#c8b8a2',
+                            font:           { size: 12 },
+                            padding:        20,
+                            boxWidth:       14,
+                            usePointStyle:  true,
+                            pointStyle:     'rect',
+                        }
+                    },
+                    tooltip: {
+                        mode:            'index',
+                        intersect:       false,
+                        backgroundColor: '#1a1f2e',
+                        borderColor:     '#2d3448',
+                        borderWidth:     1,
+                        titleColor:      '#c8b8a2',
+                        bodyColor:       '#a89880',
+                        padding:         12,
+                        callbacks: {
+                            // N'affiche pas les séries à 0 dans le tooltip
+                            label: function (ctx) {
+                                return ctx.parsed.y > 0
+                                    ? ' ' + ctx.dataset.label + ' : ' + ctx.parsed.y
+                                    : null;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        stacked: true,
+                        grid:    { color: 'rgba(200,184,162,0.07)' },
+                        ticks:   { color: '#a89880', font: { size: 11 }, maxRotation: 45 }
+                    },
+                    y: {
+                        stacked:      true,
+                        beginAtZero:  true,
+                        grid:         { color: 'rgba(200,184,162,0.07)' },
+                        ticks: {
+                            color:     '#a89880',
+                            font:      { size: 11 },
+                            precision: 0,
+                            stepSize:  1,
+                        },
+                        title: {
+                            display: true,
+                            text:    'Occurrences',
+                            color:   '#a89880',
+                            font:    { size: 12 }
+                        }
+                    }
+                }
+            }
+        });
+    })();
+</script>
+{% endif %}
+
+
+{# ── Styles spécifiques à la chronologie ────────────────────────────────── #}
+<style>
+    .chrono-wrapper {
+        padding: 1.5rem 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    /* Supprime la bordure droite de display-main (pas de sidebar) */
+    .display-main {
+        border-right: none;
+    }
+
+    .chrono-titre {
+        font-size: 1.2rem;
+        margin: 0 0 0.75rem 0;
+    }
+
+    .chrono-bandeau {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .chrono-meta {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        flex-wrap: wrap;
+    }
+
+    .chrono-meta-texte {
+        font-size: 0.9rem;
+        opacity: 0.8;
+    }
+
+    .chrono-tag {
+        display: inline-block;
+        padding: 0.2em 0.75em;
+        border-radius: 4px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        letter-spacing: 0.03em;
+        white-space: nowrap;
+    }
+
+    .tag-filtre { background: #4e8fb5; color: #fff; }
+    .tag-corpus { background: #c9a84c; color: #1a1209; }
+    .tag-top10  {
+        background:   rgba(200,184,162,0.12);
+        color:        #c8b8a2;
+        border:       1px solid rgba(200,184,162,0.25);
+    }
+
+    .chrono-chart-container {
+        position: relative;
+        height: 460px;
+    }
+
+    .chrono-empty-msg {
+        opacity: 0.75;
+        line-height: 1.8;
+    }
+    .chrono-empty-msg a {
+        color: #4e8fb5;
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}
