@@ -16,9 +16,9 @@ Jinja2==3.1.6
 MarkupSafe==3.0.3
 psycopg2-binary==2.9.11
 python-dotenv==1.2.2
-requests==2.33.1
+requests==2.33.0
 SQLAlchemy==2.0.48
 typing_extensions==4.15.0
 urllib3==2.6.3
-Werkzeug==3.1.6
+Werkzeug==3.1.7
 WTForms==3.2.1
