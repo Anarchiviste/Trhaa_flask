@@ -17,7 +17,16 @@ SQLALCHEMY_DATABASE_URI=postgresql://UTILISATEUR:MOT_DE_PASSE@HOTE:PORT/NOM_BASE
 WTF_CSRF_ENABLE=True
 SECRET_KEY=your_secret_key
 ```
+
+| Variable | Description |
+|---|---|
+| `DEBUG` | Mode debug Flask (`True` / `False`) |
+| `SQLALCHEMY_DATABASE_URI` | Chaîne de connexion PostgreSQL |
+| `WTF_CSRF_ENABLE` | Activation de la protection CSRF |
+| `SECRET_KEY` | Clé secrète pour le chiffrement des sessions |
+
 L'utilisateur doit ensuite installer le fichier requirement.txt dans un environnement python virtuel
+
 ```
 python3 -m venv flask
 source flask/bin/activate
@@ -28,55 +37,61 @@ pip install -r requirement.txt
 
 Au lancement de l'application, l'application execute automatiquement deux fonctions : 
 
-_password_initialisation()_
+### `password_initialisation()`
 
-    Vérifie si la colonne 'password' existe dans la table 'users' et l'ajoute si elle est absente.
+Vérifie si la colonne 'password' existe dans la table 'users' et l'ajoute si elle est absente.
 
-    Comportement :
-        - Inspecte les colonnes de la table 'users' via SQLAlchemy
-        - Si la colonne 'password' existe déjà, ne fait rien
-        - Si la colonne 'password' n'existe pas, exécute un ALTER TABLE pour l'ajouter
+Comportement :
+    - Inspecte les colonnes de la table 'users' via SQLAlchemy
+    - Si la colonne 'password' existe déjà, ne fait rien
+    - Si la colonne 'password' n'existe pas, exécute un ALTER TABLE pour l'ajouter
 
-    Retourne :
-        str : Un message indiquant le résultat de l'opération
-            - 'La colonne existe déjà'  → la colonne 'password' était déjà présente
-            - 'Colonne ajoutée'         → la colonne 'password' a été créée avec succès
-            - 'Problème : <détail>'     → une erreur s'est produite, avec le message d'erreur
+Retourne :
+    str : Un message indiquant le résultat de l'opération
+        - 'La colonne existe déjà'  → la colonne 'password' était déjà présente
+        - 'Colonne ajoutée'         → la colonne 'password' a été créée avec succès
+        - 'Problème : <détail>'     → une erreur s'est produite, avec le message d'erreur
 
-    Dépendances :
-        - db        : instance SQLAlchemy (flask_sqlalchemy)
-        - inspect   : from sqlalchemy import inspect
-        - text      : from sqlalchemy import text
+Dépendances :
+    - db        : instance SQLAlchemy (flask_sqlalchemy)
+    - inspect   : from sqlalchemy import inspect
+    - text      : from sqlalchemy import text
     
-    Notes : 
-        - L'ajout de la colonne 'password' ne peut se faire que par une requête SQL "en dure".
+Notes : 
+    - L'ajout de la colonne 'password' ne peut se faire que par une requête SQL "en dure".
 
-_historique_initialisation()_
+| Valeur | Signification |
+|---|---|
+| `'La colonne existe déjà'` | La colonne `password` était déjà présente |
+| `'Colonne ajoutée'` | La colonne a été créée avec succès |
+| `'Problème : <détail>'` | Une erreur s'est produite |
 
-    Vérifie si la table 'historique' existe dans la base de données et la crée si elle est absente.
+### `historique_initialisation()`
 
-    Comportement :
-        - Récupère la liste des tables existantes via SQLAlchemy
-        - Si la table 'historique' existe déjà, ne fait rien
-        - Si la table 'historique' est absente, exécute un CREATE TABLE pour la créer
-          avec les colonnes : id (clé primaire), nom_user (VARCHAR 100), requete (VARCHAR 255)
+Vérifie si la table 'historique' existe dans la base de données et la crée si elle est absente.
 
-    Retourne :
-        None : la fonction ne retourne rien, elle agit uniquement par effets de bord
-            - Log INFO  → la table existait déjà ou a été créée avec succès
-            - Log ERROR → une exception s'est produite, avec le message d'erreur
+Comportement :
+    - Récupère la liste des tables existantes via SQLAlchemy
+    - Si la table 'historique' existe déjà, ne fait rien
+    - Si la table 'historique' est absente, exécute un CREATE TABLE pour la créer
+        avec les colonnes : id (clé primaire), nom_user (VARCHAR 100), requete (VARCHAR 255)
 
-    Dépendances :
-        - app       : instance Flask
-        - db        : instance SQLAlchemy (flask_sqlalchemy)
-        - inspect   : from sqlalchemy import inspect
-        - text      : from sqlalchemy import text
+Retourne :
+    None : la fonction ne retourne rien, elle agit uniquement par effets de bord
+        - Log INFO  → la table existait déjà ou a été créée avec succès
+        - Log ERROR → une exception s'est produite, avec le message d'erreur
+
+Dépendances :
+    - app       : instance Flask
+    - db        : instance SQLAlchemy (flask_sqlalchemy)
+    - inspect   : from sqlalchemy import inspect
+    - text      : from sqlalchemy import text
 
 ## Créer un utilisateur (app/generales)
 
 Plusieurs fonctionnalités de notre application demande la création d'un compte utilisateur. La création du compte passe par la route signin, et la connexion par la route login
 
-_signin_
+### `signin`
 
     FlaskForm AjoutUtilisateur pour créer un nouveau compte.
 
