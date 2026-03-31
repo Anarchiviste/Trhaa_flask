@@ -68,24 +68,24 @@ Notes :
 
 ### `historique_initialisation()`
 
-    Vérifie si la table 'historique' existe dans la base de données et la crée si elle est absente.
+Vérifie si la table 'historique' existe dans la base de données et la crée si elle est absente.
 
-    Comportement :
-        - Récupère la liste des tables existantes via SQLAlchemy
-        - Si la table 'historique' existe déjà, ne fait rien
-        - Si la table 'historique' est absente, exécute un CREATE TABLE pour la créer
-          avec les colonnes : id (clé primaire), nom_user (VARCHAR 100), requete (VARCHAR 255)
+Comportement :
+    - Récupère la liste des tables existantes via SQLAlchemy
+    - Si la table 'historique' existe déjà, ne fait rien
+    - Si la table 'historique' est absente, exécute un CREATE TABLE pour la créer
+        avec les colonnes : id (clé primaire), nom_user (VARCHAR 100), requete (VARCHAR 255)
 
-    Retourne :
-        None : la fonction ne retourne rien, elle agit uniquement par effets de bord
-            - Log INFO  → la table existait déjà ou a été créée avec succès
-            - Log ERROR → une exception s'est produite, avec le message d'erreur
+Retourne :
+    None : la fonction ne retourne rien, elle agit uniquement par effets de bord
+        - Log INFO  → la table existait déjà ou a été créée avec succès
+        - Log ERROR → une exception s'est produite, avec le message d'erreur
 
-    Dépendances :
-        - app       : instance Flask
-        - db        : instance SQLAlchemy (flask_sqlalchemy)
-        - inspect   : from sqlalchemy import inspect
-        - text      : from sqlalchemy import text
+Dépendances :
+    - app       : instance Flask
+    - db        : instance SQLAlchemy (flask_sqlalchemy)
+    - inspect   : from sqlalchemy import inspect
+    - text      : from sqlalchemy import text
 
 ## Créer un utilisateur (app/generales)
 
