@@ -66,7 +66,7 @@ Notes :
 | `'Colonne ajoutée'` | La colonne a été créée avec succès |
 | `'Problème : <détail>'` | Une erreur s'est produite |
 
-_historique_initialisation()_
+### `historique_initialisation()`
 
     Vérifie si la table 'historique' existe dans la base de données et la crée si elle est absente.
 
@@ -91,7 +91,7 @@ _historique_initialisation()_
 
 Plusieurs fonctionnalités de notre application demande la création d'un compte utilisateur. La création du compte passe par la route signin, et la connexion par la route login
 
-_signin_
+### `signin`
 
     FlaskForm AjoutUtilisateur pour créer un nouveau compte.
 
