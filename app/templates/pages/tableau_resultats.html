@@ -19,7 +19,7 @@
             {% for r in resultats %}
             <tr>
                 <td>{{ r.auteur_nom }}, {{ r.auteur_prenom }}</td>
-                <td>{{ r.titre }}</td>
+                <td><a href="{{ url_for('e_notice', pub_id=pub.id) }}"></a>{{ r.titre }}</td>
                 <td>{{ (r.date_publication or "")[:4] }}</td> <!---J'ai mis [:4] pour avoir uniquement les premiers caractères, soit uniquement la date, sinon ça ne faisait pas très propre et il y a or "" pour ne rien afficher si la date est NULL-->
             </tr>
             {% endfor %}

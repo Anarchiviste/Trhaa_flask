@@ -64,7 +64,7 @@
         </tr>
         {% for pub in resultats %}
         <tr>
-            <td>{{ pub.titre }}</td>
+            <td><a href="{{ url_for('e_notice', pub_id=pub.id) }}"></a>{{ pub.titre }}</td>
             <td>{{ pub.auteur_nom }} {{ pub.auteur_prenom }}</td>
             <td>{{ pub.institution }}</td>
             <td>{{ pub.typologie }}</td>

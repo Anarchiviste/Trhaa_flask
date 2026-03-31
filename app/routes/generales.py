@@ -412,3 +412,30 @@ def afficherpublications(country_name):
 
     # Rend un template HTML avec les publications
     return render_template('pages/tableau_resultats.html', publications=publications, country=country_name)
+
+# Page de notices 
+@app.route('/notice/<pub_id>')
+def e_notice(pub_id):
+    """
+    Affiche la notice détaillée d'une publication.
+    Récupère les infos depuis def_publication, def_auteur et def_table_institution.
+    """
+    resultat = db.session.query(
+        DefPublication.titre,
+        DefPublication.date_publication,
+        DefPublication.langue,
+        DefPublication.typologie,
+        DefPublication.linkagorha,
+        DefPublication.linkpublication,
+        DefAuteur.auteur_nom,
+        DefAuteur.auteur_prenom,
+        DefTableInstitution.nom.label('institution')
+    ).outerjoin(DefAuteur, DefPublication.id_auteur == DefAuteur.id
+    ).outerjoin(DefTableInstitution, DefPublication.id_institution == DefTableInstitution.id
+    ).filter(DefPublication.id == pub_id
+    ).first()
+
+    if not resultat:
+        return "Notice introuvable", 404
+
+    return render_template('pages/p_notice.html', pub=resultat)
