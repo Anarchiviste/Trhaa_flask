@@ -95,44 +95,18 @@ Plusieurs fonctionnalités de notre application demande la création d'un compte
 
 Nous utilisons un FlaskForm AjoutUtilisateur pour créer un nouveau compte.
 
-Comportement :
-        - Initialise le formulaire avec la bonne classe
-        - Récupère les données avec validate_on_submit()
-        - Vérifie l'intégrité des champs reçus
-        - Si l'ajout est réussi, renvoit vers le login, 
-        sinon renvoit de nouveau vers le signin
+**Comportement :**
+- Initialise le formulaire `AjoutUtilisateur`
+- Valide les données soumises via `validate_on_submit()`
+- Vérifie l'intégrité des champs reçus
+- En cas de succès → redirige vers `login` avec un message flash
+- En cas d'échec → réaffiche `sign-in.html` avec les erreurs
 
-Retourne : 
+> Les mots de passe sont hachés avant d'être stockés en base. La validation est effectuée côté serveur.
 
-Création réussie
-    
-- Redirige vers la route login avec un message flash de succès.
-        
-    Création échouée
-    
-        - Réaffiche la page sign-in.html avec les erreurs et le formulaire.
-        
-    Formulaire non soumis/valide
-    
-        - Affiche la page sign-in.html avec le formulaire.
-        
-Dépendances : 
+**Dépendances :** Flask, Flask-Login, Flask-WTF, Flask-SQLAlchemy, `User.compte_utilisateur`
 
-- Flask
-    
-- Flask-Login
-        
-    - Flask-WTF
-  
-        - Flask-SQLAlchemy
-        - User.compte_utilisateur : Méthode statique pour créer un compte utilisateur.
-        - Flaskform AjoutUtilistateur
-
-    Notes : 
-        Validation des données : Le formulaire est validé côté serveur pour éviter les soumissions malveillantes.
-        Hachage des mots de passe : Les mots de passe sont hachés avant d'être stockés en base de données.
-
-_login_
+### `login`
 
     FlaskForm LoginUtilisateur pour authentifier un utilisateur existant.
     Comportement :
