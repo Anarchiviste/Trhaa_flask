@@ -1,5 +1,13 @@
 # Travaux de recherche en histoire de l'art et archéologie
 
+## Récupérer la base de données
+
+L'application utilise la base de données produite lors de [l'étape précédente](https://github.com/Anarchiviste/BDDR_TRHAA).
+```
+git clone git@github.com:Anarchiviste/BDDR_TRHAA.git
+```
+Il faut ensuite construire cette base en téléchargeant les csv indiqués et en suivant les informations du readme.
+
 ## Installer l'application
 
 Pour lancer l'application, il faut d'abord créer et compléter le .env.
