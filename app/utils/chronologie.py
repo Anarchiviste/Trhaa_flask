@@ -1,9 +1,7 @@
 from ..app import db
 from ..models.models import DefPublication, DefLiaisonSujets
 
-# ----------------------------------------------------------------
 # Constantes
-# ----------------------------------------------------------------
 TOP_N    = 10
 ANNEE_MIN = 1990
 ANNEE_MAX = 2024
@@ -13,14 +11,12 @@ def get_donnees_chronologie(ids_publications=None):
     """
     Construit les données pour le graphique chronologique des sujets Rameau.
 
-    Paramètres
-    ----------
+    Paramètres :
     ids_publications : list | None
         - None  → corpus complet (aucune recherche effectuée)
         - list  → liste d'IDs issus de la recherche (peut être vide)
 
-    Retourne
-    --------
+    Retourne:
     dict JSON-sérialisable :
         annees           list[int]         [1990, …, 2024]
         sujets           dict[str, list]   {sujet: [count_1990, …, count_2024]}
@@ -32,11 +28,11 @@ def get_donnees_chronologie(ids_publications=None):
     annees    = list(range(ANNEE_MIN, ANNEE_MAX + 1))
     nb_annees = len(annees)
 
-    # ── Cas liste vide (recherche sans résultat) ──────────────────────────────
+    # Cas de liste vide
     if ids_publications is not None and len(ids_publications) == 0:
         return _vide(annees)
 
-    # ── Requête principale ────────────────────────────────────────────────────
+    # Requête principale
     query = (
         db.session.query(
             DefPublication.id,
@@ -55,7 +51,7 @@ def get_donnees_chronologie(ids_publications=None):
 
     rows = query.all()
 
-    # ── Comptage en Python (robuste aux formats de date_publication) ──────────
+    # Comptage en Python
     comptages      = {}   # {(annee, sujet): count}
     ids_dans_plage = set()
 
@@ -75,7 +71,7 @@ def get_donnees_chronologie(ids_publications=None):
     if not comptages:
         return _vide(annees)
 
-    # ── Totaux par sujet ──────────────────────────────────────────────────────
+    # Totaux par sujet 
     totaux = {}
     for (_, sujet), count in comptages.items():
         totaux[sujet] = totaux.get(sujet, 0) + count
@@ -83,16 +79,16 @@ def get_donnees_chronologie(ids_publications=None):
     nb_sujets_total = len(totaux)
     top_n_applique  = nb_sujets_total > TOP_N
 
-    # ── Top N sujets ──────────────────────────────────────────────────────────
+    # Top n sujets afin d'avoir une visualisation
     sujets_tries  = sorted(totaux.items(), key=lambda x: x[1], reverse=True)
     top_sujets    = {s for s, _ in sujets_tries[:TOP_N]}
 
-    # ── Initialisation des séries ─────────────────────────────────────────────
+    # Initialisation des séries
     sujets_data = {s: [0] * nb_annees for s in top_sujets}
     if top_n_applique:
         sujets_data['Autres'] = [0] * nb_annees
 
-    # ── Remplissage ───────────────────────────────────────────────────────────
+    # Remplissage
     for (annee, sujet), count in comptages.items():
         idx = annee - ANNEE_MIN
         if sujet in top_sujets:
@@ -100,7 +96,7 @@ def get_donnees_chronologie(ids_publications=None):
         elif top_n_applique:
             sujets_data['Autres'][idx] += count
 
-    # ── Tri final (fréquence décroissante, "Autres" en dernier) ──────────────
+    # Tri final
     sujets_ordonnes = sorted(
         [(s, sujets_data[s]) for s in top_sujets],
         key=lambda x: totaux.get(x[0], 0),
@@ -119,7 +115,7 @@ def get_donnees_chronologie(ids_publications=None):
     }
 
 
-# ── Helpers privés ────────────────────────────────────────────────────────────
+# Helpers privés pour les données vides
 
 def _vide(annees):
     return {
