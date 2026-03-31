@@ -1,5 +1,5 @@
 from ..app import app, db
-from flask import render_template, redirect, url_for, flash, request, jsonify
+from flask import render_template, redirect, url_for, flash, request, jsonify, session
 from ..models.models import User, DefTableInstitution, DefAuteur, DefPublication, DefLiaisonSujets, WikidataArchaeologicalSites, WikidataPersons, WikidataPlaces, WikidataConcepts, WikidataOrganizations, WikidataArtMovements, WikidataTimePeriods, Historique
 from sqlalchemy import text, inspect
 from ..models.formulaires import AjoutUtilisateur, LoginUtilisateur
@@ -7,6 +7,7 @@ from ..utils.recherche_avancee import recherche_avancee, get_options_filtres
 from flask_login import current_user, login_required, logout_user, login_user
 from datetime import datetime
 from ..utils.recherche_simple import barre_recherche_simple
+from ..utils.chronologie import get_donnees_chronologie
 import json
 import os
 
@@ -33,6 +34,18 @@ def home():
             sujet_rameau  = request.form.get('sujet_rameau'),
             ids_a_inclure = ids_a_inclure,
         )
+
+        # Mémorisation des paramètres de recherche pour la chronologie
+        session['recherche_params'] = {
+            'q':           q,
+            'auteur':      request.form.get('auteur', ''),
+            'institution': request.form.get('institution', ''),
+            'typologie':   request.form.get('typologie', ''),
+            'langue':      request.form.get('langue', ''),
+            'date_min':    request.form.get('date_min', ''),
+            'date_max':    request.form.get('date_max', ''),
+            'sujet_rameau':request.form.get('sujet_rameau', ''),
+        }
 
     return render_template('pages/home.html', resultats=resultats, q=q)
 
@@ -216,13 +229,69 @@ def e_recherche_avancee():
     
 @app.context_processor
 def inject_recherche():
-    ROUTES_AVEC_OPTIONS = ('home', 'e_recherche_avancee')
+    ROUTES_AVEC_OPTIONS = ('home')
     if request.endpoint in ROUTES_AVEC_OPTIONS:
         try:
             return dict(options=get_options_filtres(), resultats=None)
         except Exception:
             return dict(options={}, resultats=None)
     return {}
+
+@app.route('/chronologie')
+def chronologie():
+    """
+    Affiche la frise chronologique des sujets Rameau.
+
+    Comportement :
+        - Si une recherche a été effectuée sur /home, ses paramètres sont stockés
+          en session (recherche_params). La route les rejoue pour obtenir les IDs
+          filtrés, puis appelle get_donnees_chronologie() avec ces IDs.
+        - Sans recherche préalable, affiche le corpus complet (ids=None).
+
+    Retourne :
+        render_template('pages/p_chronologie.html') avec les variables :
+            donnees          dict  données brutes pour Chart.js (| tojson en template)
+            est_filtre       bool  True si les données proviennent d'une recherche
+            nb_resultats     int   publications uniques dans la plage 1990-2024
+            nb_sujets_total  int   nombre de sujets distincts avant plafonnement
+            top_n_applique   bool  True si limité au Top 10
+            aucun_resultat   bool  True si aucune donnée disponible
+    """
+    params     = session.get('recherche_params')
+    est_filtre = params is not None
+
+    if params:
+        ids_a_inclure = None
+        if params.get('q'):
+            resultats_simple = barre_recherche_simple(params['q'])
+            ids_a_inclure    = [r['id'] for r in resultats_simple]
+
+        resultats = recherche_avancee(
+            auteur        = params.get('auteur')       or None,
+            institution   = params.get('institution')  or None,
+            typologie     = params.get('typologie')    or None,
+            langue        = params.get('langue')       or None,
+            date_min      = params.get('date_min')     or None,
+            date_max      = params.get('date_max')     or None,
+            sujet_rameau  = params.get('sujet_rameau') or None,
+            ids_a_inclure = ids_a_inclure,
+        )
+        ids = [r['id'] for r in resultats] if resultats else []
+    else:
+        ids = None
+
+    donnees = get_donnees_chronologie(ids)
+
+    return render_template(
+        'pages/p_chronologie.html',
+        donnees         = donnees,
+        est_filtre      = est_filtre,
+        nb_resultats    = donnees['nb_resultats'],
+        nb_sujets_total = donnees['nb_sujets_total'],
+        top_n_applique  = donnees['top_n_applique'],
+        aucun_resultat  = donnees['aucun_resultat'],
+    )
+
 
 @app.route('/historique', methods=['GET'])
 @login_required
@@ -298,6 +367,16 @@ def p_tableau_resultats():
 from ..utils.trad_pays import build_country_map
 @app.route('/trad')
 def trad():
+    """
+    Retourne une carte des pays traduits via une requête HTTP GET.
+
+    Cette fonction lance le script trad_pays.py et stocke le résultat
+     de la fonction build_country_map dans country_map sous forme de réponse JSON.
+
+    Returns: flask.Response:Une réponse JSON contenant la traduction des pays du 
+    français à l'anglais.
+        Format attendu : `{"pays": "traduction", ...}`.
+    """
     country_map=build_country_map(app,db)
     return jsonify(country_map)
 
@@ -316,6 +395,39 @@ for db_name, en_name in COUNTRY_MAP.items():
 # Affiche la page avec la carte. 
 @app.route('/p_carto')
 def p_carto():
+    """
+    Retourne une page HTML de cartographie des pays ayant au moins une publication.
+
+    Cette fonction collecte les noms français des pays enregistrés dans les tables
+    `WikidataPlaces`, `WikidataOrganizations` et `WikidataArchaeologicalSites` via des requêtes SQL,
+    puis filtre et traduit ces noms en anglais pour identifier les pays éligibles.
+    Enfin, elle rend un template Flask avec les données nécessaires à la visualisation cartographique.
+
+    Processus :
+    1. Interroge la base de données pour récupérer les pays distincts (avec `country` non null).
+    2. Fusionne les résultats en un ensemble (`set`) pour éviter les doublons.
+    3. Traduit les noms français en noms anglais via `COUNTRY_MAP`.
+    NB : COUNTRY_MAP contient le json pays_traduits.json
+    4. Charge le fichier JSON de traduction (`pays_traduits.json`) pour le rendre accessible dans le
+    fichier HTML. 
+    5. Rend le template `pages/p_carto.html` avec :
+       - `COUNTRY_MAP` : Carte complète des traductions pays.
+       - `PAYS_AVEC_PUBLICATIONS` : Liste des pays éligibles (en anglais).
+
+    Returns: flask.Response: Page HTML rendue (`render_template`) avec les variables nécessaires à la cartographie.
+
+    Dépendances :
+        - Flask (app, render_template)
+        - SQLAlchemy (db.session, query, join, filter, distinct)
+        - Modules Python : os, json
+        - Classes : WikidataPlaces, WikidataOrganizations, WikidataArchaeologicalSites, DefLiaisonSujets
+        - Fichier statique : `statics/pays_traduits.json`
+
+    Notes:
+        - `COUNTRY_MAP` est un dictionnaire global de correspondance (ex: {"France": "France", ...}).
+        - Le fichier `pays_traduits.json` est attendu dans le dossier `statics` du projet.
+        - La liste `pays_en_avec_publications` est filtrée pour exclure les valeurs `None`.
+    """
     # Collecte les noms français distincts des pays ayant ≥ 1 publication
     pays_places = db.session.query(WikidataPlaces.country).join(
         DefLiaisonSujets, DefLiaisonSujets.qid_places == WikidataPlaces.qid
@@ -350,6 +462,43 @@ def p_carto():
 # Compte le nombre de publication associées à un pays
 @app.route('/c_publication_count')
 def get_publications_count():
+    """
+    Retourne le nombre de publications associées à un pays donné, via une requête HTTP GET.
+
+    Cette fonction prend en paramètre un nom de pays en anglais (format GeoJSON) et retourne
+    le nombre total de publications liées à ce pays dans la base de données. Elle utilise des
+    jointures externes (`isouter=True`) pour inclure les publications liées aux lieux, organisations
+    ou sites archéologiques, même en l'absence de correspondance directe.
+
+    Args:
+        request.args.get('country', str):
+            Nom du pays en anglais (ex: "France", "Germany"). Si non fourni, retourne le compte total.
+
+    Processus :
+    1. Convertit le nom anglais en noms français via `COUNTRY_MAP_INVERSE`.
+    2. Exécute une requête SQL pour compter les publications associées aux pays correspondants.
+    3. Utilise des jointures externes pour inclure toutes les tables liées (`WikidataPlaces`, etc.).
+    4. Filtre les résultats pour ne garder que les publications liées aux pays ciblés.
+    5. Retourne le compte sous forme de JSON.
+
+    Returns:
+        flask.Response:
+            Réponse JSON contenant le nombre de publications :
+            `{"count": <int>}`.
+
+    Dépendances :
+        - Flask (app, request)
+        - SQLAlchemy (db.session, query, join, filter, count, isouter)
+        - Modules Python : json
+        - Classes : DefPublication, DefLiaisonSujets, WikidataPlaces, WikidataOrganizations, WikidataArchaeologicalSites
+        - Constantes : COUNTRY_MAP_INVERSE
+
+    Notes:
+        - La conversion `COUNTRY_MAP_INVERSE` est utilisée pour retrouver les noms français en base.
+        - Les jointures externes (`isouter=True`) garantissent que toutes les publications sont comptées,
+          même sans correspondance directe dans les tables de lieux/organisations/sites.
+        - La requête filtre les résultats avec un `OR` logique sur les trois tables.
+    """
     country_en = request.args.get('country', '')
 
     # Convertit le nom anglais (GeoJSON) → noms français stockés en base
@@ -376,42 +525,6 @@ def get_publications_count():
     ).count()
 
     return jsonify({'count': count})
-
-# Affiche la page de résultat avec les publications. 
-@app.route('/resultat_pays/<country_name>')
-def afficherpublications(country_name):
-    # country_name est le nom anglais (GeoJSON) → convertir en noms français
-    db_names = COUNTRY_MAP_INVERSE.get(COUNTRY_MAP.get(country_name, country_name), [country_name])
-
-    publications = db.session.query(
-        DefAuteur.auteur_nom,
-        DefAuteur.auteur_prenom,
-        DefPublication.titre,
-        DefPublication.date_publication
-    ).join(
-        DefPublication, DefAuteur.id == DefPublication.id_auteur
-    ).join(
-        DefLiaisonSujets, DefPublication.id == DefLiaisonSujets.id_publication
-    ).join(
-        WikidataPlaces,
-        DefLiaisonSujets.qid_places == WikidataPlaces.qid,
-        isouter=True
-    ).join(
-        WikidataOrganizations,
-        DefLiaisonSujets.qid_organizations == WikidataOrganizations.qid,
-        isouter=True
-    ).join(
-        WikidataArchaeologicalSites,
-        DefLiaisonSujets.qid_archaeological_sites == WikidataArchaeologicalSites.qid,
-        isouter=True
-    ).filter(
-        (WikidataPlaces.country.in_(db_names)) |
-        (WikidataOrganizations.country.in_(db_names)) |
-        (WikidataArchaeologicalSites.country.in_(db_names))
-    ).all()
-
-    # Rend un template HTML avec les publications
-    return render_template('pages/tableau_resultats.html', publications=publications, country=country_name)
 
 # Page de notices 
 @app.route('/notice/<pub_id>')

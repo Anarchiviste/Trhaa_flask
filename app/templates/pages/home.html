@@ -2,6 +2,37 @@
 
 {% block content %}
 
+<div class="encart_a_propos">
+    <h2>À propos</h2>
+    <p>TRHAA_IN est un instrument de navigation permettant d'explorer les ressources de la base 
+        de données du TRHAA (Travaux de Recherche en Histoire de l'Art et Archéologie), créée par 
+        l'Institut national d'histoir de l'art. 
+    </p>
+    <p>Cette base de données accueille les références bibliographiques des travaux produits par la 
+        jeune recherche et permet une vision globale sur les évolutions épistémologiques, institutionnelles
+        et académiques de ces disciplines ces vingt dernières années. 
+    </p>
+    <p>TRHAA_IN (pour instrument de navigation) a été conçu comme un outil d'exploration et d'analyse
+        de ces données. L'accès à leur contenu a été repensé de manière à mettre en valeur leur polysémie : 
+        l'utilisateur peut désormais entrer dans le corpus par les thèmes, les lieux et les personnes, et 
+        bénéficie d'une navigation intuitive et facilitée. 
+    </p>
+    <p>Ces données ont également fait l'objet d'une valorisation : leur interopérabilité avec les outils
+        bibliographiques classiques est permise par leur alignement avec des thesaurii de références (Wikidata), 
+        ainsi qu'une option de téléchargement sous plusieurs formats qui encourage leur réutilisation sur d'autres
+        plateformes (Zotero). 
+    </p>
+    <p>Enfin, l'une des valeurs ajoutées du TRHAA_IN est l'exploitation des données comme un ensemble cohérent 
+        par un travail conséquent de datavisualisation, pensé comme un outil d'analyse. La chronologie, 
+        la cartographie et le graph sont autant de moyens pour l'utilisateur de visualiser sa sélection, 
+        appuyée sur une fonctionnalité de recherche avancée pointue. 
+    </p>
+    <h2>L'équipe</h2>
+     <p>Ce projet a été réalisé par Mélina Franot, Jules Musquin, Florent Farfouillon et Maud Mélinand, 
+        étudiants du Master 2 Technologies numériques appliquées à l'histoire de l'École nationale des Chartes. 
+     </p>
+</div>
+
 {% if resultats is not none %}
     <p>{{ resultats|length }} résultat(s)</p>
     {% if resultats %}
@@ -17,11 +48,11 @@
         {% for pub in resultats %}
         <tr>
             <td>{{ pub.titre }}</td>
-            <td>{{ pub.auteur_nom }} {{ pub.auteur_prenom }}</td>
+            <td>{{ pub.auteur_nom }}, {{ pub.auteur_prenom }}</td>
             <td>{{ pub.institution }}</td>
             <td>{{ pub.typologie }}</td>
             <td>{{ pub.langue }}</td>
-            <td>{{ pub.date_publication }}</td>
+            <td>{{ (pub.date_publication or "")[:4]}}</td>
         </tr>
         {% endfor %}
     </table>
