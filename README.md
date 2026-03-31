@@ -293,7 +293,7 @@ Afin de délimiter la frontière des pays de notre carte, nous utilisons un fich
         - Le label anglais du pays si trouvé.
         - None si le pays n'est pas trouvé ou en cas d'erreur.
 
-####`build_country_map()` 
+#### `build_country_map()` 
 - Select distinct tous les noms de pays
 - Les place dans une liste. 
 - Crée un dictionnaire avec la traduction en anglais de ces pays
