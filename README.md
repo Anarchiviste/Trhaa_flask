@@ -37,7 +37,7 @@ pip install -r requirement.txt
 
 Au lancement de l'application, l'application execute automatiquement deux fonctions : 
 
-### `password_initialisation()`
+#### `password_initialisation()`
 
 Vérifie si la colonne 'password' existe dans la table 'users' et l'ajoute si elle est absente.
 
@@ -66,7 +66,7 @@ Notes :
 | `'Colonne ajoutée'` | La colonne a été créée avec succès |
 | `'Problème : <détail>'` | Une erreur s'est produite |
 
-### `historique_initialisation()`
+#### `historique_initialisation()`
 
 Vérifie si la table 'historique' existe dans la base de données et la crée si elle est absente.
 
@@ -91,7 +91,7 @@ Dépendances :
 
 Plusieurs fonctionnalités de notre application demande la création d'un compte utilisateur. La création du compte passe par la route signin, et la connexion par la route login
 
-### `signin()`
+#### `signin()`
 
 Nous utilisons un FlaskForm AjoutUtilisateur pour créer un nouveau compte.
 
@@ -106,7 +106,7 @@ Nous utilisons un FlaskForm AjoutUtilisateur pour créer un nouveau compte.
 
 **Dépendances :** Flask, Flask-Login, Flask-WTF, Flask-SQLAlchemy, `User.compte_utilisateur`
 
-### `login()`
+#### `login()`
 
  Formulaire `LoginUtilisateur` (FlaskForm) pour authentifier un utilisateur existant.
  
@@ -130,7 +130,7 @@ L'application propose deux modes de recherche : une **recherche simple** plein t
  
 ---
  
-### `get_options_filtres()`
+#### `get_options_filtres()`
  
 Retourne toutes les listes nécessaires à l'alimentation du formulaire de recherche avancée.
  
@@ -165,7 +165,7 @@ Recherche avancée dans la base TRHAA. Tous les paramètres sont optionnels et i
  
 ---
  
-### `barre_recherche_simple(recherche)`
+#### `barre_recherche_simple(recherche)`
  
 Recherche plein texte dans la base TRHAA, utilisant le **Full Text Search PostgreSQL** avec le dictionnaire `french` (gestion de la morphologie française : accents, pluriels, conjugaisons).
  
@@ -293,7 +293,7 @@ Afin de délimiter la frontière des pays de notre carte, nous utilisons un fich
         - Le label anglais du pays si trouvé.
         - None si le pays n'est pas trouvé ou en cas d'erreur.
 
-**build_country_map() :** 
+####`build_country_map()` 
 - Select distinct tous les noms de pays
 - Les place dans une liste. 
 - Crée un dictionnaire avec la traduction en anglais de ces pays
