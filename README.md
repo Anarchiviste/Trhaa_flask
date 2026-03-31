@@ -106,39 +106,19 @@ Nous utilisons un FlaskForm AjoutUtilisateur pour créer un nouveau compte.
 
 **Dépendances :** Flask, Flask-Login, Flask-WTF, Flask-SQLAlchemy, `User.compte_utilisateur`
 
-### `login`
+### `login()`
 
-    FlaskForm LoginUtilisateur pour authentifier un utilisateur existant.
-    Comportement :
-        - Redirige vers home si l'utilisateur est déjà authentifié
-        - Initialise le formulaire avec la classe LoginUtilisateur
-        - Récupère les données avec validate_on_submit()
-        - Vérifie l'authenticité des identifiants (email/mot de passe)
-        - Si la connexion est réussie, redirige vers la page demandée initialement
-          ou vers home si aucune page n'était demandée
-        - Sinon, réaffiche la page de login avec un message d'erreur
-    Retourne :
-        Utilisateur déjà connecté
-            - Redirige immédiatement vers la route home.
-        Connexion réussie
-            - Redirige vers la route 'next' (page demandée initialement) ou home,
-              avec un message flash de succès.
-        Connexion échouée
-            - Réaffiche la page login.html avec le message d'erreur et le formulaire.
-        Formulaire non soumis/valide
-            - Affiche la page login.html avec le formulaire.
-    Dépendances :
-        - Flask
-        - Flask-Login : login_user, current_user
-        - Flask-WTF
-        - Flask-SQLAlchemy
-        - User.connexion : Méthode statique pour vérifier les identifiants utilisateur
-        - LoginUtilisateur : FlaskForm de connexion
-    Notes :
-        - login_view doit être configuré dans app.py via login.login_view = 'login'
-          pour que @login_required redirige correctement vers cette route
-        - Le paramètre 'next' est géré automatiquement par Flask-Login lors d'une
-          tentative d'accès à une route protégée par @login_required
+ Formulaire `LoginUtilisateur` (FlaskForm) pour authentifier un utilisateur existant.
+ 
+**Comportement :**
+- Si l'utilisateur est déjà authentifié → redirige immédiatement vers `home`
+- Valide les identifiants (email / mot de passe) via `User.connexion`
+- En cas de succès → redirige vers la page demandée initialement (`next`) ou vers `home`
+- En cas d'échec → réaffiche `login.html` avec un message d'erreur
+ 
+> `login_view` doit être configuré dans `app.py` via `login.login_view = 'login'` pour que `@login_required` redirige correctement. Le paramètre `next` est géré automatiquement par Flask-Login.
+ 
+**Dépendances :** Flask, Flask-Login (`login_user`, `current_user`), Flask-WTF, Flask-SQLAlchemy, `User.connexion`
 
 ## Faire une recherche (app/utils)
 
@@ -146,7 +126,7 @@ Dans notre application nous avons deux types de recherches, la recherche simple 
 
 La route de recherche avancée utilise deux fonctions : 
 
-_get_options_filtres_
+### `get_options_filtres()`
 
     Retourne un dictionnaire contenant toutes les listes nécessaires au formulaire.
 
