@@ -293,10 +293,11 @@ Afin de délimiter la frontière des pays de notre carte, nous utilisons un fich
         - Le label anglais du pays si trouvé.
         - None si le pays n'est pas trouvé ou en cas d'erreur.
 
-**build_country_map() :** - Select distinct tous les noms de pays, les met dans une liste. Crée un dictionnaire avec la traduction en anglais de ces pays et stocke le résultat dans un fichier Json **pays_traduits.json**, stockés dans les *statics*. 
-    Construit une carte (dictionnaire) de traduction des noms de pays du français vers l'anglais. Cette fonction extrait tous les noms de pays distincts depuis trois tables de la base de données (`WikidataPlaces`, `WikidataOrganizations`, `WikidataArchaeologicalSites`), puis utilise l'API Wikidata pour traduire chaque nom de pays du français vers l'anglais. Les résultats sont sauvegardés dans un fichier JSON pour éviter de refaire la traduction à chaque exécution.
-
-    La fonction utilise `app.app_context()` pour gérer le contexte SQLAlchemy hors application Flask, et respecte les limites de l'API Wikidata avec un délai (`time.sleep(0.5)`) entre chaque requête.
+**build_country_map() :** 
+- Select distinct tous les noms de pays
+- Les place dans une liste. 
+- Crée un dictionnaire avec la traduction en anglais de ces pays
+- Stocke le résultat dans un fichier Json **pays_traduits.json**, stockés dans les *statics*. 
 
     Paramètres:
         app: L'application Flask, pour gérer le contexte SQLAlchemy.
@@ -309,27 +310,29 @@ Afin de délimiter la frontière des pays de notre carte, nous utilisons un fich
 Le fichier Json issu de ce script est stocké dans les `statics` et appelé dans la route `p_carto` qui le transmet au fichier html `p_carto.html` afin qu'il soit utilisé dans le script javascript. Cette même route lance la page HTML. 
     
 **p_carto :** Retourne une page HTML de cartographie des pays ayant au moins une publication.
-    Endpoint Flask qui génère une carte des pays ayant au moins une publication.
-    Cette fonction interroge la base de données pour récupérer tous les noms de pays distincts (en français) qui sont associés à au moins une publication via les tables `WikidataPlaces`, `WikidataOrganizations`, ou `WikidataArchaeologicalSites`. Les noms sont ensuite traduits en anglais via un dictionnaire de traduction (`COUNTRY_MAP`), et le résultat est passé à un template HTML pour affichage cartographique. La fonction utilise des jointures avec la table `DefLiaisonSujets` pour filtrer les pays qui ont des publications associées. Le dictionnaire de traduction est chargé depuis un fichier JSON pour éviter de refaire les traductions à chaque appel.
+- Cette fonction interroge la base de données pour récupérer tous les noms de pays distincts (en français) qui sont associés à au moins une publication via les tables `WikidataPlaces`, `WikidataOrganizations`, ou `WikidataArchaeologicalSites`. 
+- Les noms sont traduits en anglais via un dictionnaire de traduction (`COUNTRY_MAP`)
+- Le résultat est passé à un template HTML pour affichage cartographique. 
+La fonction utilise des jointures avec la table `DefLiaisonSujets` pour filtrer les pays qui ont des publications associées. Le dictionnaire de traduction est chargé depuis un fichier JSON pour éviter de refaire les traductions à chaque appel.
 
     Retourne:
         render_template: Affiche la page `p_carto.html` avec les données nécessaires :
             - `COUNTRY_MAP` : Dictionnaire de traduction français → anglais. Fichier pays_traduits.json
             - `PAYS_AVEC_PUBLICATIONS` : Liste des noms de pays en anglais ayant au moins une publication.
 
-Une fois arrivé sur la page, le survol de la souris affiche si le pays sélectionné apparait dans la base de données, et si oui, combien de fois. Cette action mobilise plusieurs fonctions. 
-
-La fonction **styleDefault()** affiche les couleurs de bases des pays en fonction de leur présence dans la base de données
-La fonction Javascript **styleHover()** fait changer la couleur des pays survolés. 
-La fonction **tooltip** créer l'infobulle et **buildTooltipHTML()** la remplie en fonction des informations de la base de données.
-La fonction **fetchPubCount()** récuppère le nombre de publications grâce à la route **c_publication_count()** : 
-    Endpoint Flask qui retourne le nombre de publications associées à un pays donné. Cette fonction interroge la base de données pour compter le nombre de publications liées à un pays, en utilisant son nom en anglais (comme dans le GeoJSON). Le nom anglais est converti en noms français (stockés en base) via `COUNTRY_MAP_INVERSE`. La requête SQL utilise des jointures avec les tables `WikidataPlaces`, `WikidataOrganizations`, et `WikidataArchaeologicalSites` pour couvrir tous les types d'entités géographiques associées aux publications.
+Une fois arrivé sur la page, le survol de la souris affiche si le pays sélectionné apparait dans la base de données, et si oui, combien de fois. Cette action mobilise plusieurs fonctions javascript et deux routes : 
+- **styleDefault()** affiche les couleurs de bases des pays en fonction de leur présence dans la base de données
+- **styleHover()** fait changer la couleur des pays survolés. 
+- **tooltip** créer l'infobulle et **buildTooltipHTML()** la remplie en fonction des informations de la base de données.
+- **fetchPubCount()** récuppère le nombre de publications grâce à la route **c_publication_count()** : 
+    - Cette fonction interroge la base de données pour compter le nombre de publications liées à un pays, en utilisant son nom en anglais. 
+    - Le nom anglais est converti en noms français (stockés en base) via `COUNTRY_MAP_INVERSE`. 
+    La requête SQL utilise des jointures avec les tables `WikidataPlaces`, `WikidataOrganizations`, et `WikidataArchaeologicalSites` pour couvrir tous les types d'entités géographiques associées aux publications.
 
     Paramètres:
         country (str, optionnel): Le nom du pays en anglais (ex: "France"). Si non fourni, retourne le compte total.
 
     Retourne:
         Response (flask.Response): Une réponse JSON contenant le nombre de publications associées : `{ "count": <int> }`.
-
-Tout cela est concrétisé par la fonction jv **onEachFeature()** qui prend en compte toutes les actions réalisables par pays. Elle détermine si il se passe quelque chose quand la souris arrive sur un pays et qu'elle en sort, soit l'affichafe et la disparition de l'infobulle. Et enfin elle déterminer ce qu'il se passe quand on clique sur un pays. Cette action mobilise la route **e_recherche_avancee()**.
+- Tout cela est concrétisé par la fonction jv **onEachFeature()** qui prend en compte toutes les actions réalisables par pays. Elle détermine si il se passe quelque chose quand la souris arrive sur un pays et qu'elle en sort, soit l'affichage et la disparition de l'infobulle. Et enfin elle déterminer ce qu'il se passe quand on clique sur un pays. Cette action mobilise la route **e_recherche_avancee()**.
 
