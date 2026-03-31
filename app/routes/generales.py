@@ -488,16 +488,6 @@ def get_publications_count():
         - Les jointures sont effectuées avec `isouter=True` pour inclure les entités même si aucune publication n'y est associée.
         - Le filtre utilise un `OR` pour couvrir les trois tables de pays possibles.
         - Si le paramètre `country` n'est pas fourni, la fonction retourne le compte total de toutes les publications.
-
-    Example:
-        >>> # Appel avec le paramètre `country` :
-        >>> response = get_publications_count()
-        >>> # Si l'URL est `/c_publication_count?country=France`
-        >>> # Retourne : {"count": 150}
-
-        >>> # Appel sans paramètre :
-        >>> response = get_publications_count()
-        >>> # Retourne : {"count": 1250} (compte total)
     """
     country_en = request.args.get('country', '')
 
@@ -530,8 +520,34 @@ def get_publications_count():
 @app.route('/notice/<pub_id>')
 def e_notice(pub_id):
     """
-    Affiche la notice détaillée d'une publication.
-    Récupère les infos depuis def_publication, def_auteur et def_table_institution.
+    Affiche la notice détaillée d'une publication identifiée par son ID.
+    Cette fonction interroge la base de données pour récupérer les informations détaillées
+    d'une publication (titre, date, langue, typologie, liens, auteur, institution) via une
+    requête SQL avec des jointures sur les tables `def_auteur` et `def_table_institution`.
+    Si la publication n'est pas trouvée, une réponse 404 est retournée. Sinon, la notice
+    est affichée via un template HTML dédié.
+
+    Paramètres:
+        pub_id (str): L'identifiant unique de la publication à afficher.
+
+    Retourne:
+        Response (flask.Response):
+            - Si la publication est trouvée : rendu du template `p_notice.html` avec les données de la publication.
+            - Si la publication est introuvable : une réponse HTTP 404 avec le message "Notice introuvable".
+
+    Dependencies:
+        - `flask`: Pour définir l'itinéraire (`@app.route`) et rendre le template.
+        - `sqlalchemy`: Pour exécuter la requête SQL sur la base de données.
+        - `DefPublication`, `DefAuteur`, `DefTableInstitution`:
+          Modèles SQLAlchemy utilisés pour les jointures et le filtrage.
+
+    Notes:
+        - Les jointures sont effectuées avec `outerjoin` pour inclure les auteurs et institutions même s'ils sont absents.
+        - La requête sélectionne les champs suivants :
+            - Titre, date, langue, typologie, liens (des `DefPublication`).
+            - Nom et prénom de l'auteur (des `DefAuteur`).
+            - Nom de l'institution (des `DefTableInstitution`).
+        - Le template `p_notice.html` doit être conçu pour afficher les données retournées.
     """
     resultat = db.session.query(
         DefPublication.titre,

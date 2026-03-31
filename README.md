@@ -263,6 +263,19 @@ La classe `Historique` expose une méthode `to_dict()` utilisée par la route `h
 ```
  
 Le fichier téléchargé est nommé `historique_recherches.json` et contient l'ensemble des entrées de l'historique de l'utilisateur.
+
+## Consultation des notices 
+
+Il est possible de consulter les notices, grâce aux injections jinja et la route `/notice/<pub_id>` d'afficher la page html `p_notice` contenant toutes informations concernant la publications souhaitée.
+La fonction `e_notice()` affiche la notice détaillée d'une publication identifiée par son ID. Elle interroge la base de données pour récupérer les informations détaillées d'une publication (titre, date, langue, typologie, liens, auteur, institution) via une requête SQL avec des jointures sur les tables `def_auteur` et `def_table_institution`. Si la publication n'est pas trouvée, une réponse 404 est retournée. Sinon, la notice est affichée via un template HTML dédié.
+
+    Paramètres:
+        pub_id (str): L'identifiant unique de la publication à afficher.
+
+    Retourne:
+        Response (flask.Response):
+            - Si la publication est trouvée : rendu du template `p_notice.html` avec les données de la publication.
+            - Si la publication est introuvable : une réponse HTTP 404 avec le message "Notice introuvable".
  
 ## Page de cartographie 
 
@@ -335,4 +348,7 @@ Une fois arrivé sur la page, le survol de la souris affiche si le pays sélecti
     Retourne:
         Response (flask.Response): Une réponse JSON contenant le nombre de publications associées : `{ "count": <int> }`.
 - Tout cela est concrétisé par la fonction jv **onEachFeature()** qui prend en compte toutes les actions réalisables par pays. Elle détermine si il se passe quelque chose quand la souris arrive sur un pays et qu'elle en sort, soit l'affichage et la disparition de l'infobulle. Et enfin elle déterminer ce qu'il se passe quand on clique sur un pays. Cette action mobilise la route **e_recherche_avancee()**.
+
+## Consultations de notice
+
 
