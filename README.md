@@ -91,212 +91,179 @@ Dépendances :
 
 Plusieurs fonctionnalités de notre application demande la création d'un compte utilisateur. La création du compte passe par la route signin, et la connexion par la route login
 
-### `signin`
+### `signin()`
 
-    FlaskForm AjoutUtilisateur pour créer un nouveau compte.
+Nous utilisons un FlaskForm AjoutUtilisateur pour créer un nouveau compte.
 
-    Comportement :
-        - Initialise le formulaire avec la bonne classe
-        - Récupère les données avec validate_on_submit()
-        - Vérifie l'intégrité des champs reçus
-        - Si l'ajout est réussi, renvoit vers le login, 
-        sinon renvoit de nouveau vers le signin
+**Comportement :**
+- Initialise le formulaire `AjoutUtilisateur`
+- Valide les données soumises via `validate_on_submit()`
+- Vérifie l'intégrité des champs reçus
+- En cas de succès → redirige vers `login` avec un message flash
+- En cas d'échec → réaffiche `sign-in.html` avec les erreurs
 
-    Retourne : 
-        Création réussie
-            - Redirige vers la route login avec un message flash de succès.
-        Création échouée
-            - Réaffiche la page sign-in.html avec les erreurs et le formulaire.
-        Formulaire non soumis/valide
-            - Affiche la page sign-in.html avec le formulaire.
-        
-    Dépendances : 
-        - Flask
-        - Flask-Login
-        - Flask-WTF
-        - Flask-SQLAlchemy
-        - User.compte_utilisateur : Méthode statique pour créer un compte utilisateur.
-        - Flaskform AjoutUtilistateur
+> Les mots de passe sont hachés avant d'être stockés en base. La validation est effectuée côté serveur.
 
-    Notes : 
-        Validation des données : Le formulaire est validé côté serveur pour éviter les soumissions malveillantes.
-        Hachage des mots de passe : Les mots de passe sont hachés avant d'être stockés en base de données.
+**Dépendances :** Flask, Flask-Login, Flask-WTF, Flask-SQLAlchemy, `User.compte_utilisateur`
 
-_login_
+### `login()`
 
-    FlaskForm LoginUtilisateur pour authentifier un utilisateur existant.
-    Comportement :
-        - Redirige vers home si l'utilisateur est déjà authentifié
-        - Initialise le formulaire avec la classe LoginUtilisateur
-        - Récupère les données avec validate_on_submit()
-        - Vérifie l'authenticité des identifiants (email/mot de passe)
-        - Si la connexion est réussie, redirige vers la page demandée initialement
-          ou vers home si aucune page n'était demandée
-        - Sinon, réaffiche la page de login avec un message d'erreur
-    Retourne :
-        Utilisateur déjà connecté
-            - Redirige immédiatement vers la route home.
-        Connexion réussie
-            - Redirige vers la route 'next' (page demandée initialement) ou home,
-              avec un message flash de succès.
-        Connexion échouée
-            - Réaffiche la page login.html avec le message d'erreur et le formulaire.
-        Formulaire non soumis/valide
-            - Affiche la page login.html avec le formulaire.
-    Dépendances :
-        - Flask
-        - Flask-Login : login_user, current_user
-        - Flask-WTF
-        - Flask-SQLAlchemy
-        - User.connexion : Méthode statique pour vérifier les identifiants utilisateur
-        - LoginUtilisateur : FlaskForm de connexion
-    Notes :
-        - login_view doit être configuré dans app.py via login.login_view = 'login'
-          pour que @login_required redirige correctement vers cette route
-        - Le paramètre 'next' est géré automatiquement par Flask-Login lors d'une
-          tentative d'accès à une route protégée par @login_required
+ Formulaire `LoginUtilisateur` (FlaskForm) pour authentifier un utilisateur existant.
+ 
+**Comportement :**
+- Si l'utilisateur est déjà authentifié → redirige immédiatement vers `home`
+- Valide les identifiants (email / mot de passe) via `User.connexion`
+- En cas de succès → redirige vers la page demandée initialement (`next`) ou vers `home`
+- En cas d'échec → réaffiche `login.html` avec un message d'erreur
+ 
+> `login_view` doit être configuré dans `app.py` via `login.login_view = 'login'` pour que `@login_required` redirige correctement. Le paramètre `next` est géré automatiquement par Flask-Login.
+ 
+**Dépendances :** Flask, Flask-Login (`login_user`, `current_user`), Flask-WTF, Flask-SQLAlchemy, `User.connexion`
 
-## Faire une recherche (app/utils)
-
-Dans notre application nous avons deux types de recherches, la recherche simple et la recherche avancée. 
-
-La route de recherche avancée utilise deux fonctions : 
-
-_get_options_filtres_
-
-    Retourne un dictionnaire contenant toutes les listes nécessaires au formulaire.
-
-    dict avec les clés :
-        typologies    : list[str] valeurs hardcodées
-        langues       : list[str] valeurs hardcodées
-        institutions  : list[str] triées alphabétiquement depuis la base
-        sujets_rameau : list[str] triés alphabétiquement depuis la base
-
-_recherche_avancee_
-
-    Recherche avancée dans la base TRHAA.
-
-    Tous les paramètres sont optionnels et indépendants. Les filtres actifs se combinent en AND.
-
-    auteur : str | None
-    Correspondance stricte insensible à la casse sur DefAuteur.auteur_nom. Exemple : 'dupont' matche 'Dupont'.
-
-    institution : str | None
-    Valeur exacte issue de la liste retournée par get_options_filtres(). Comparaison stricte insensible à la casse.
-
-    typologie : str | None
-    Une des quatre valeurs : 'mémoire', 'thèse', 'ouvrage', 'DPLG'. Comparaison exacte (les valeurs en base sont déjà propres).
-
-    langue : str | None
-    Une des quatre valeurs : 'Français', 'Anglais', 'Allemand', 'Portugais'. Comparaison exacte.
-
-    date_min : int | str | None
-    Année entière ex. 2005. La fonction construit 'YYYY-01-01'.
-
-    date_max : int | str | None
-    Année entière ex. 2015.
-
-    sujet_rameau : str | None
-    Valeur exacte issue de la liste retournée par get_options_filtres().Les valeurs en base sont toutes en minuscules.
-
-    Retourne
-    list[dict]
-    Chaque dictionnaire contient :
-    id, titre, auteur_nom, auteur_prenom,
-    institution, typologie, langue, date_publication
-
-_barre_recherche_simple_
-
-    Recherche plein texte dans la base TRHAA.
-
-    Utilise le Full Text Search PostgreSQL avec le dictionnaire 'french' qui gère la morphologie française (accents, pluriels, conjugaisons).
-
-    La recherche porte simultanément sur :
-        - DefPublication.titre
-        - DefAuteur.auteur_nom
-        - DefAuteur.auteur_prenom
-
-    Les résultats sont triés par pertinence décroissante — les publications dont le texte correspond le mieux à la recherche apparaissent en premier.
-
-    Paramètres
-    recherche : str
-    Texte libre saisi par l'utilisateur. Exemples :
-        "peinture flamande"
-        "Prunet"
-        "archéologie romaine Gaule"
-
-    Retourne
-    list[dict]
-    Chaque dict contient :
-        id, titre, auteur_nom, auteur_prenom,
-        institution, typologie, langue, date_publication
-    Liste vide si la recherche est vide ou ne donne aucun résultat.
-
-## Utiliser l'historique de recherche (app/generales)
-
-Toutes les fonctions de recherche rendent une variable résultats suivit d'un commit permettant d'ajouter à la table de résultat nos recherches pour l'historique. L'historique enregistre l'utilisateur chercheur et une date.
-
-    if resultats and current_user.is_authenticated:
-        for res in resultats[:50]:
-            db.session.add(Historique(
-                id_user             = str(current_user.id),
-                nom_user            = current_user.name,
-                result_author       = f"{res.get('auteur_nom', '')} {res.get('auteur_prenom', '')}".strip()[:100] or '',
-                result_title        = (res.get('titre') or '')[:200],
-                result_institution  = (res.get('institution') or '')[:100],
-                result_date_min     = res.get('date_publication') or '',
-                result_typologie    = (res.get('typologie') or '')[:100],
-                result_langue       = (res.get('langue') or '')[:100],
-                result_sujet_rameau = '',
-                timestamp           = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
-            ))
-        db.session.commit()   
-
-Pour accéder à l'historique, il suffit d'utiliser la route _historique_. La route historique ne rend que les informations liés à l'utilisateur connecté. 
-
-    Route Flask affichant l'historique des recherches de l'utilisateur connecté.
-
-    Comportements :
-        - Interroge la table Historique en filtrant sur l'id de l'utilisateur courant
-        - Trie les entrées par id décroissant (résultats les plus récents en premier)
-        - Sérialise l'ensemble des entrées en liste de dicts via to_dict()
-        - Passe les données sous deux formes au template : objets ORM et JSON
-
-        - render_template('pages/historique.html') avec :
-            - historique      : liste d'objets Historique (accès aux attributs ORM dans le template)
-            - historique_json : liste de dicts sérialisés (prête pour un usage JS/JSON dans le template)
-
-    Dépendances :
-        - flask_login : login_required, current_user
-        - models      : Historique (SQLAlchemy ORM)
-
-## Télécharger ses résultats depuis son historique 
-
-La classe Historique intègre une fonction _to_dict_ qui est donné à la route historique pour créer un paramètre historique_json qui est ensuite traité par un scripte javascript dans partials/part_ui.html et qui permet de générer et de télécharger un fichier json de l'historique de l'utililisateur.
-
+--
+ 
+## Recherche documentaire
+ 
+> Module : `app/utils`
+ 
+L'application propose deux modes de recherche : une **recherche simple** plein texte et une **recherche avancée** multi-critères. Les deux fonctions retournent des résultats dans le même format de dictionnaire, ce qui permet d'appliquer un filtrage ultérieur avec `filtrer()`.
+ 
+---
+ 
+### `get_options_filtres()`
+ 
+Retourne toutes les listes nécessaires à l'alimentation du formulaire de recherche avancée.
+ 
+**Retourne :** `dict`
+ 
+| Clé | Type | Source |
+|---|---|---|
+| `typologies` | `list[str]` | Valeurs codées en dur |
+| `langues` | `list[str]` | Valeurs codées en dur |
+| `institutions` | `list[str]` | Base de données, ordre alphabétique |
+| `sujets_rameau` | `list[str]` | Base de données, ordre alphabétique |
+ 
+---
+ 
+### `recherche_avancee(**kwargs)`
+ 
+Recherche avancée dans la base TRHAA. Tous les paramètres sont optionnels et indépendants ; les filtres actifs se combinent en `AND`.
+ 
+**Paramètres :**
+ 
+| Paramètre | Type | Description |
+|---|---|---|
+| `auteur` | `str \| None` | Correspondance insensible à la casse sur `DefAuteur.auteur_nom` |
+| `institution` | `str \| None` | Valeur exacte issue de `get_options_filtres()` |
+| `typologie` | `str \| None` | `'mémoire'`, `'thèse'`, `'ouvrage'` ou `'DPLG'` |
+| `langue` | `str \| None` | `'Français'`, `'Anglais'`, `'Allemand'` ou `'Portugais'` |
+| `date_min` | `int \| str \| None` | Année entière (ex. `2005`) — la fonction construit `YYYY-01-01` |
+| `date_max` | `int \| str \| None` | Année entière (ex. `2015`) |
+| `sujet_rameau` | `str \| None` | Valeur exacte issue de `get_options_filtres()` (stockée en minuscules) |
+ 
+**Retourne :** `list[dict]` — chaque dict contient `id`, `titre`, `auteur_nom`, `auteur_prenom`, `institution`, `typologie`, `langue`, `date_publication`.
+ 
+---
+ 
+### `barre_recherche_simple(recherche)`
+ 
+Recherche plein texte dans la base TRHAA, utilisant le **Full Text Search PostgreSQL** avec le dictionnaire `french` (gestion de la morphologie française : accents, pluriels, conjugaisons).
+ 
+La recherche porte simultanément sur `DefPublication.titre`, `DefAuteur.auteur_nom` et `DefAuteur.auteur_prenom`. Les résultats sont triés par score de pertinence décroissant (`ts_rank`).
+ 
+**Paramètre :**
+ 
+| Paramètre | Type | Exemples |
+|---|---|---|
+| `recherche` | `str` | `"peinture flamande"`, `"Prunet"`, `"archéologie romaine Gaule"` |
+ 
+**Retourne :** `list[dict]` dans le même format que `recherche_avancee()`. Retourne une liste vide si la recherche est vide ou ne produit aucun résultat.
+ 
+**Historique :** après sérialisation des résultats, la fonction enregistre automatiquement jusqu'à 50 entrées dans la table `Historique` pour l'utilisateur connecté :
+ 
+```python
+if resultats and current_user.is_authenticated:
+    for res in resultats[:50]:
+        db.session.add(Historique(
+            id_user             = str(current_user.id),
+            nom_user            = current_user.name,
+            result_author       = f"{res.get('auteur_nom', '')} {res.get('auteur_prenom', '')}".strip()[:100] or '',
+            result_title        = (res.get('titre') or '')[:200],
+            result_institution  = (res.get('institution') or '')[:100],
+            result_date_min     = res.get('date_publication') or '',
+            result_typologie    = (res.get('typologie') or '')[:100],
+            result_langue       = (res.get('langue') or '')[:100],
+            result_sujet_rameau = '',
+            timestamp           = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
+        ))
+    db.session.commit()
 ```
+ 
+> Le champ `result_sujet_rameau` est laissé vide car il n'existe pas dans les résultats de la recherche simple. Le `commit` est effectué une seule fois après la boucle.
+ 
+---
+
+## Historique de recherche
+ 
+> Module : `app/generales`
+ 
+### Enregistrement automatique
+ 
+Toutes les fonctions de recherche (`recherche_avancee`, `barre_recherche_simple`) enregistrent leurs résultats dans la table `Historique` après chaque appel réussi, à condition que l'utilisateur soit authentifié. L'entrée contient l'identifiant et le nom de l'utilisateur ainsi qu'un horodatage.
+ 
+### Route `historique` — Consulter son historique
+ 
+Affiche l'historique des recherches de l'utilisateur connecté.
+ 
+**Comportement :**
+- Interroge la table `Historique` filtrée sur `current_user.id`
+- Trie les entrées par `id` décroissant (résultats les plus récents en premier)
+- Sérialise les entrées en liste de dicts via `to_dict()`
+- Passe les données au template sous deux formes : objets ORM et JSON
+ 
+**Variables de template :**
+ 
+| Variable | Type | Usage |
+|---|---|---|
+| `historique` | `list[Historique]` | Accès aux attributs ORM dans Jinja2 |
+| `historique_json` | `list[dict]` | Consommation JavaScript / export JSON |
+ 
+**Dépendances :** `flask_login` (`login_required`, `current_user`), modèle `Historique`
+ 
+---
+ 
+## Export de l'historique
+ 
+> Partiel : `partials/part_ui.html`
+ 
+La classe `Historique` expose une méthode `to_dict()` utilisée par la route `historique` pour produire `historique_json`. Un script JavaScript intégré au template permet de télécharger l'historique complet au format JSON.
+ 
+```html
 <script id="historique-data" type="application/json">
   {{ historique_json | tojson }}
 </script>
-
+ 
 <script>
   const donneesHistorique = JSON.parse(
     document.getElementById('historique-data').textContent
   );
-
+ 
   function telechargerJSON() {
     const blob = new Blob([JSON.stringify(donneesHistorique, null, 2)], {
       type: 'application/json'
     });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
+    const a   = document.createElement('a');
+    a.href     = url;
     a.download = 'historique_recherches.json';
     a.click();
     URL.revokeObjectURL(url);
   }
 </script>
 ```
+ 
+Le fichier téléchargé est nommé `historique_recherches.json` et contient l'ensemble des entrées de l'historique de l'utilisateur.
+ 
 ## Page de cartographie 
 
 La page "cartographie" figure une carte leaflet. Lors du survol de la souris une infobulle s'affiche. Elle indique si le pays est représenté dans la base de données et si oui, dans combien de publications. Cliquer sur un pays mène à la page recherche_avancée et affiche les publications concernées. 
