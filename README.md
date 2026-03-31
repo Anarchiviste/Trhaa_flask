@@ -359,4 +359,34 @@ Une fois arrivé sur la page, le survol de la souris affiche si le pays sélecti
 
 ## Consultations de notice
 
+## Page de chronologie
+
+La page "chronologie" affiche un graphique en barres empilées représentant la popularité des sujets Rameau par année de soutenance/diffusion (1990–2024).
+
+### Fonctionnement
+
+La route `/chronologie` lit les identifiants de publications issus de la dernière recherche effectuée, stockés en session Flask. Si aucune recherche n'a été effectuée, le corpus complet est utilisé. Les données sont calculées par `get_donnees_chronologie()` dans `app/utils/chronologie.py` et injectées directement dans le template via Jinja2.
+
+### Visualisation
+
+Le graphique est rendu côté client avec **Chart.js v4**. Chaque barre représente une année ; chaque couche de couleur correspond à un sujet Rameau. Lorsque le nombre de sujets distincts dépasse 10, seuls les 10 les plus fréquents sont affichés, les autres étant regroupés sous "Autres". Un bandeau contextuel informe l'utilisateur du périmètre affiché (corpus complet ou recherche filtrée) et du plafonnement éventuel.
+
+### `get_donnees_chronologie(ids_publications)`
+
+| Paramètre | Type | Description |
+|---|---|---|
+| `ids_publications` | `list \| None` | IDs issus de la recherche ; `None` = corpus complet |
+
+**Retourne :** `dict` contenant :
+
+| Clé | Type | Description |
+|---|---|---|
+| `annees` | `list[int]` | `[1990, …, 2024]` |
+| `sujets` | `dict[str, list]` | `{sujet: [count_1990, …, count_2024]}` |
+| `nb_sujets_total` | `int` | Nombre de sujets distincts avant plafonnement |
+| `top_n_applique` | `bool` | `True` si limité aux 10 premiers |
+| `nb_resultats` | `int` | Publications uniques dans la plage 1990–2024 |
+| `aucun_resultat` | `bool` | `True` si aucun résultat |
+
+
 
