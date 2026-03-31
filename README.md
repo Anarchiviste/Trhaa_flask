@@ -17,7 +17,16 @@ SQLALCHEMY_DATABASE_URI=postgresql://UTILISATEUR:MOT_DE_PASSE@HOTE:PORT/NOM_BASE
 WTF_CSRF_ENABLE=True
 SECRET_KEY=your_secret_key
 ```
+
+| Variable | Description |
+|---|---|
+| `DEBUG` | Mode debug Flask (`True` / `False`) |
+| `SQLALCHEMY_DATABASE_URI` | Chaîne de connexion PostgreSQL |
+| `WTF_CSRF_ENABLE` | Activation de la protection CSRF |
+| `SECRET_KEY` | Clé secrète pour le chiffrement des sessions |
+
 L'utilisateur doit ensuite installer le fichier requirement.txt dans un environnement python virtuel
+
 ```
 python3 -m venv flask
 source flask/bin/activate
@@ -30,26 +39,32 @@ Au lancement de l'application, l'application execute automatiquement deux foncti
 
 _password_initialisation()_
 
-    Vérifie si la colonne 'password' existe dans la table 'users' et l'ajoute si elle est absente.
+Vérifie si la colonne 'password' existe dans la table 'users' et l'ajoute si elle est absente.
 
-    Comportement :
-        - Inspecte les colonnes de la table 'users' via SQLAlchemy
-        - Si la colonne 'password' existe déjà, ne fait rien
-        - Si la colonne 'password' n'existe pas, exécute un ALTER TABLE pour l'ajouter
+Comportement :
+    - Inspecte les colonnes de la table 'users' via SQLAlchemy
+    - Si la colonne 'password' existe déjà, ne fait rien
+    - Si la colonne 'password' n'existe pas, exécute un ALTER TABLE pour l'ajouter
 
-    Retourne :
-        str : Un message indiquant le résultat de l'opération
-            - 'La colonne existe déjà'  → la colonne 'password' était déjà présente
-            - 'Colonne ajoutée'         → la colonne 'password' a été créée avec succès
-            - 'Problème : <détail>'     → une erreur s'est produite, avec le message d'erreur
+Retourne :
+    str : Un message indiquant le résultat de l'opération
+        - 'La colonne existe déjà'  → la colonne 'password' était déjà présente
+        - 'Colonne ajoutée'         → la colonne 'password' a été créée avec succès
+        - 'Problème : <détail>'     → une erreur s'est produite, avec le message d'erreur
 
-    Dépendances :
-        - db        : instance SQLAlchemy (flask_sqlalchemy)
-        - inspect   : from sqlalchemy import inspect
-        - text      : from sqlalchemy import text
+Dépendances :
+    - db        : instance SQLAlchemy (flask_sqlalchemy)
+    - inspect   : from sqlalchemy import inspect
+    - text      : from sqlalchemy import text
     
-    Notes : 
-        - L'ajout de la colonne 'password' ne peut se faire que par une requête SQL "en dure".
+Notes : 
+    - L'ajout de la colonne 'password' ne peut se faire que par une requête SQL "en dure".
+
+| Valeur | Signification |
+|---|---|
+| `'La colonne existe déjà'` | La colonne `password` était déjà présente |
+| `'Colonne ajoutée'` | La colonne a été créée avec succès |
+| `'Problème : <détail>'` | Une erreur s'est produite |
 
 _historique_initialisation()_
 
